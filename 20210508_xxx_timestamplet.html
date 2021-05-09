@@ -1,0 +1,20 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Timestamplet</title>
+  </head>
+  <body>
+    <h1>Timestamplet</h1>
+    
+    <p>Drag the required bookmarklet to your browser bar.</p>
+    
+    <ol>
+      <li><a href="javascript:(function()%7Bvar%20date%20%3D%20new%20Date()%3Bd%3Ddate.getFullYear()%20%2B%20'%2F'%20%2B%20('0'%20%2B%20(date.getMonth()%20%2B%201)).slice(-2)%20%2B%20'%2F'%20%2B('0'%20%2B%20date.getDate()).slice(-2)%20%2B%20'%20'%20%2B%20%20('0'%20%2B%20date.getHours()).slice(-2)%20%2B%20'%3A'%20%2B%20('0'%20%2B%20date.getMinutes()).slice(-2)%20%2B%20'%3A'%20%2B%20('0'%20%2B%20date.getSeconds()).slice(-2)%20%2B%20'.'%20%2B%20date.getMilliseconds()%3BelemLi4%20%3D%20document.createElement('p')%3BelemLi4.innerText%3Dd%3Bdocument.body.appendChild(elemLi4)%3BelemLi4.style.position%3D%22absolute%22%3BelemLi4.style.left%3D%2210px%22%3BelemLi4.style.top%3D%220px%22%3BelemLi4.style.color%3D%22red%22%7D)()">Timestamp Insert</a></li>
+      <li><a href="javascript:(function()%7B(function()%7Bconst%20e%20%3D%20document.createElement('textarea')%3Be.value%20%3D%20%60%24%7Bdocument.title%7D%5Cn%24%7Blocation.href%7D%5Cn%24%7Bwindow.getSelection().toString()%7D%5Cn%60%3Bdocument.querySelector('body').append(e)%3Be.select()%3Bdocument.execCommand('copy')%3Be.remove()%3B%7D)()%7D)()">Get URL Title</a></li>
+    </ol>
+
+  </body>
+</html>
