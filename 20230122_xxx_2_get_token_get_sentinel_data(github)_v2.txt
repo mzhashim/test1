@@ -1,0 +1,66 @@
+
+-2023/1/23,21:00
+
+#
+#----------------------------------------------------------------------------------------------------
+$url15 = "https://login.microsoftonline.com/${tenantid}/oauth2/v2.0/token"
+$Headers15 = @{"Host"="login.microsoftonline.com"}
+$Body15=@{
+grant_type="refresh_token"
+client_id="04b07795-8ddb-461a-bbee-02f9e1bf7b46"
+client_info="1"
+refresh_token=$refreshtoken2
+"scope"="https://api.loganalytics.io//.default"+" offline_access"+" openid"+" profile"
+}
+
+#----------------------------------------------------------------------------------------------------
+$response15=Invoke-WebRequest -UseBasicParsing -Uri $url15 -Method "POST" -Headers $Headers15  -Body $Body15
+$jsonObj15 =ConvertFrom-Json $([String]::new($response15.Content))
+$accesstoken15=$jsonObj15.access_token
+$refreshtoken15=$jsonObj15.refresh_token
+
+#----------------------------------------------------------------------------------------------------
+$url16 = "https://api.loganalytics.io/v1/workspaces/${$workspacesid}/query?timespan=PT4H"
+$Headers16 = @{"Authorization"="Bearer "+$accesstoken15 ; "Content-Type"="application/json"}
+# OK,$Body16="{`"query`":`"SentinelHealth\n`",`"options`":{`"truncationMaxSize`":67108864},`"maxRows`":30001,`"workspaceFilters`":{`"regions`":[]}}"
+# NG $Body16="{`"query`":`"SigninLogs| where AppDisplayName contains `"Azure Portal`"\n`",`"options`":{`"truncationMaxSize`":67108864},`"maxRows`":30001,`"workspaceFilters`":{`"regions`":[]}}"
+# OK $Body16="{`"query`":`"SigninLogs| where AppDisplayName contains \`"Azure Portal\`"`",`"options`":{`"truncationMaxSize`":67108864},`"maxRows`":30001,`"workspaceFilters`":{`"regions`":[]}}"
+$Body16="{`"query`":`"SigninLogs| where AppDisplayName contains \`"Azure Portal\`"`",`"options`":{`"truncationMaxSize`":67108864},`"maxRows`":30001,`"workspaceFilters`":{`"regions`":[]}}"
+
+$response16=Invoke-WebRequest -UseBasicParsing -Uri $url16 -Method "POST" -Headers $Headers16  -Body $Body16
+$jsonObj16 =ConvertFrom-Json $([String]::new($response16.Content))
+
+$max16=$jsonObj16.tables[0].rows.Count
+
+#for ($i16=0; $i16 -lt $max16; $i16++){
+#Write-Host $jsonObj16.tables[0].rows[$i16][0]  $jsonObj16.tables[0].rows[$i16][1] $jsonObj16.tables[0].rows[$i16][2] $jsonObj16.tables[0].rows[$i16][3] $jsonObj16.tables[0].rows[$i16][4] 
+#}
+
+
+# PT30M 30分
+# PT1H　1時間
+
+# コマンドを 5 秒ごとに 1 分間繰り返します。
+$timer = new-timespan -Minutes 1
+$clock = [diagnostics.stopwatch]::StartNew()
+while ($clock.elapsed -lt $timer){
+
+$url16 = "https://api.loganalytics.io/v1/workspaces/${$workspacesid}/query?timespan=PT4H"
+$Headers16 = @{"Authorization"="Bearer "+$accesstoken15 ; "Content-Type"="application/json"}
+# OK,$Body16="{`"query`":`"SentinelHealth\n`",`"options`":{`"truncationMaxSize`":67108864},`"maxRows`":30001,`"workspaceFilters`":{`"regions`":[]}}"
+# NG $Body16="{`"query`":`"SigninLogs| where AppDisplayName contains `"Azure Portal`"\n`",`"options`":{`"truncationMaxSize`":67108864},`"maxRows`":30001,`"workspaceFilters`":{`"regions`":[]}}"
+# OK $Body16="{`"query`":`"SigninLogs| where AppDisplayName contains \`"Azure Portal\`"`",`"options`":{`"truncationMaxSize`":67108864},`"maxRows`":30001,`"workspaceFilters`":{`"regions`":[]}}"
+$Body16="{`"query`":`"SigninLogs| where AppDisplayName contains \`"Azure Portal\`"`",`"options`":{`"truncationMaxSize`":67108864},`"maxRows`":30001,`"workspaceFilters`":{`"regions`":[]}}"
+
+$response16=Invoke-WebRequest -UseBasicParsing -Uri $url16 -Method "POST" -Headers $Headers16  -Body $Body16
+$jsonObj16 =ConvertFrom-Json $([String]::new($response16.Content))
+
+$max16=$jsonObj16.tables[0].rows.Count
+Write-Host (date)"---------------------"
+Write-Host $jsonObj16.tables[0].rows[0][2]
+
+$command
+start-sleep -seconds 10
+}
+write-host "Timer end"
+
