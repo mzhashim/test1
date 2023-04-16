@@ -1,0 +1,48 @@
+
+-2023/4/16,11:00
+
+----------------------------
+root@misp:~/20230415_misp_startworker# cat 5.stop_start.py
+import requests
+import json
+import datetime
+
+dt_now = datetime.datetime.now()
+print(dt_now)
+
+headers={
+ 'Authorization': '',
+ 'Accept': 'application/json',
+ 'Content-type': 'application/json'
+}
+body=[]
+
+url="https://192.168.246.143/servers/getWorkers"
+res = requests.get(url, headers=headers, verify=False)
+data=res.json()
+
+if ( 'workers' in data['scheduler']):
+    if ( 'alive' in data['scheduler']['workers'][0]) :
+        # important str(data['scheduler']['workers'][0]['alive']) == 'True') :
+        if (str(data['scheduler']['workers'][0]['alive']) == 'True') :
+            print('scheduler is up')
+        else:
+            print('scheduler is down with pid')
+            pid=data['scheduler']['workers'][0]['pid']
+            url="https://192.168.246.143/servers/stopworker/"+str(pid)
+            res2 = requests.post(url, headers=headers, data=body, verify=False)
+            print(res2)
+            url="https://192.168.246.143/servers/startworker/scheduler"
+            res3 = requests.post(url, headers=headers, data=body, verify=False)
+            print(res3)
+
+else:
+    print('scheduler is down without pid')
+    url3="https://192.168.246.143/servers/startworker/scheduler"
+#    from pprint import pprint
+    res3 = requests.post(url3, headers=headers, data=body, verify=False)
+#    pprint(vars(res3))
+    data3=res3.json()
+    print(data3)
+-----------------------------
+
