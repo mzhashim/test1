@@ -1,0 +1,20 @@
+﻿
+
+##1.------------------------------
+$url="https://login.microsoftonline.com/bbbbbbbbbbbbbbbb/oauth2/v2.0/token"
+$body="client_id=xxxxxxxx&scope=https%3A%2F%2Fgraph.microsoft.com%2F.default&client_secret=xxxxxxxxxxxxxxxxxxxxx&grant_type=client_credentials"
+
+$res=Invoke-RestMethod -Method "POST" -Uri $url -body $body
+
+##2.------------------------------
+$url2="https://graph.microsoft.com/beta/security/tiindicators/submitTiIndicators"
+$body2='{"value": [{"threatType": "watchlist", "description": "OSINT-20230928-2240 ShellShock scanning IPs from OpenDNSData encoded by David Andr\u00c3\u00a9", "tlpLevel": "white", "targetProduct": "Azure Sentinel", "expirationDateTime": "2023-10-03", "externalId": "542e4c9c-cadc-4f8f-bb11-6d13950d210b", "lastReportedDateTime": "2018-02-05 16:50:37", "tags": ["type:OSINT", "tlp:green", "tlp:white"], "action": "alert", "passiveOnly": false, "networkSourceIPv4": "1.48.209.68", "indicatorRequestHash": "-3026559211976834036"}] }'
+#$headers2 = @{'Content-Type' = 'application/json';'Authorization' = "Bearer $res.access_token"}
+$tokens2=$res.access_token
+$headers2 = @{
+    'Content-Type' = 'application/json'
+    'Authorization' = "Bearer $tokens2"
+}
+
+$res2=Invoke-RestMethod -Method "POST" -Uri $url2 -body $body2 -Headers $headers2
+$res2
