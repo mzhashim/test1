@@ -1,1 +1,8 @@
 ﻿
+
+res=`curl -s -X POST -d 'client_id=xxxxxxxxxxxxxxxxx&scope=https%3A%2F%2Fgraph.microsoft.com%2F.default&client_secret=&grant_type=client_credentials' "https://login.microsoftonline.com/yyyyyyyyyyyyyyyyy/oauth2/v2.0/token"`
+
+access_token=`echo $res | awk -F\" '{print $12}'`
+
+#echo $access_token
+curl -s -X POST -d '{"value": [{"threatType":"watchlist","description":"OSINT-20230928-2240 ShellShock scanning IPs from OpenDNSData encoded by David Andr\u00c3\u00a9","tlpLevel":"white","targetProduct":"Azure Sentinel","expirationDateTime":"2023-10-03","externalId":"542e4c9c-cadc-4f8f-bb11-6d13950d210b","lastReportedDateTime":"2018-02-05 16:50:37","tags":["type:OSINT","tlp:green","tlp:white"],"action":"alert","passiveOnly":false, "networkSourceIPv4":"1.48.209.68","indicatorRequestHash":"-3026559211976834036"}]}' "https://graph.microsoft.com/beta/security/tiindicators/submitTiIndicators" -H "Content-Type: application/json" -H "Authorization: Bearer ${access_token}" -v
