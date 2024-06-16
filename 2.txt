@@ -1,0 +1,119 @@
+
+$date1=get-date '2024/5/24'
+#$array1=@("00","01","02","03","04","05","06","07","08","09","10","11","12","13","14","15","16","17","18","19","20","21","22","23")
+$array1=@("13","14","15","16","17") #,"18","19","20","21","22","23")
+$array2=@("00","10","20","30","40","50")
+
+$bearer1=""
+#日付ループ
+foreach($cnt in 1..100){
+$date1yyyymmdd=$date1.AddDays($cnt).ToString("yyyy-MM-dd")
+
+#24時間ループ
+Foreach ($24hours in $array1){
+#Write-Host $item1
+
+　　#10分間ループ(10分ぐらい絞らないと30000件以下にならない)
+    Foreach ($10minutes in $array2){
+    $ccc1=$24hours+":"+$10minutes+":00.000"
+    $ddd1=([int]$10minutes+9)
+    if ($ddd1 -eq 9){$ddd1 = "09"}
+    $ccc2=$24hours+":"+[string]$ddd1+":59.999"
+    $fff1=[string]$date1yyyymmdd+" "+[string]$24hours+":"+[string]$10minutes+":00.000"
+    $10minutes9=([int]$10minutes+9)
+    if ($10minutes9 -eq 9){$10minutes9 = "09"}
+    $fff2=[string]$date1yyyymmdd+" "+[string]$24hours+":"+[string]$10minutes9+":59.999"
+    $time1="datetime('$fff1')"
+    $time2="datetime('$fff2')"
+
+   # Write-Host $time1
+   # Write-Host $time2
+
+    $session = New-Object Microsoft.PowerShell.Commands.WebRequestSession
+    $session.UserAgent = "Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36"
+    $aaaa=Invoke-WebRequest -UseBasicParsing -Uri "https://api.loganalytics.io/v1/subscriptions/e626783a-a67b-4985-bb15-57d0b9aa0ba4/resourceGroups/20220216resourcegroup1/providers/Microsoft.OperationalInsights/workspaces/20221022-log-analytics-workspace/query?" `
+    -Method "POST" `
+    -WebSession $session `
+    -Headers @{
+    "authority"="api.loganalytics.io"
+      "method"="POST"
+      "path"="/v1/subscriptions/e626783a-a67b-4985-bb15-57d0b9aa0ba4/resourceGroups/20220216resourcegroup1/providers/Microsoft.OperationalInsights/workspaces/20221022-log-analytics-workspace/query?"
+      "scheme"="https"
+      "accept"="application/json, text/plain, */*"
+      "accept-encoding"="gzip, deflate, br, zstd"
+      "accept-language"="ja,en-US;q=0.9,en;q=0.8"
+      "access-control-expose-headers"="x-ms-client-request-id"
+      "authorization"="Bearer " + $bearer1
+      "cache-control"="no-cache"
+      "origin"="https://sandbox-1.reactblade.portal.azure.net"
+      "pragma"="no-cache"
+      "prefer"="wait=600, ai.include-statistics=true, ai.include-render=true, include-datasources=true"
+      "priority"="u=1, i"
+      "referer"="https://sandbox-1.reactblade.portal.azure.net/"
+      "sec-ch-ua"="`"Google Chrome`";v=`"125`", `"Chromium`";v=`"125`", `"Not.A/Brand`";v=`"24`""
+      "sec-ch-ua-mobile"="?0"
+      "sec-ch-ua-platform"="`"Windows`""
+      "sec-fetch-dest"="empty"
+      "sec-fetch-mode"="cors"
+      "sec-fetch-site"="cross-site"
+      "x-ms-app"="AppAnalytics"
+      "x-ms-client-request-id"="14fce681-5720-4a2f-a45e-57f4c85dbaab"
+      "x-ms-client-request-info"="Query"
+      "x-ms-user-id"=""
+    } `
+    -ContentType "application/json" `
+    -Body "{`"query`":`"Heartbeat\n|where TimeGenerated between ($time1 .. $time2)\n\n`",`"options`":{`"truncationMaxSize`":67108864},`"maxRows`":30001,`"workspaceFilters`":{`"regions`":[]}}"
+
+
+    $b=ConvertFrom-Json $aaaa.Content
+    # NG > if( $b.tables[0].rows.Count -gt 0 ){
+    if( $b.tables[0].rows.Count -gt 0 ){
+    Write-Host ($time1 + " ; " + $time2 +";"+ $b.tables[0].rows.Count +":件数(データあり)")
+
+    for($i=0; $i -lt $b.tables[0].rows.Count; $i++){
+
+    $data1=$b.tables[0].rows[$i][0] + ";"+
+    $b.tables[0].rows[$i][1] + ";"+
+    $b.tables[0].rows[$i][2] + ";"+
+    $b.tables[0].rows[$i][3] + ";"+
+    $b.tables[0].rows[$i][4] + ";"+
+    $b.tables[0].rows[$i][5] + ";"+
+    $b.tables[0].rows[$i][6] + ";"+
+    $b.tables[0].rows[$i][7] + ";"+
+    $b.tables[0].rows[$i][8] + ";"+
+    $b.tables[0].rows[$i][9] + ";"+
+    $b.tables[0].rows[$i][10] + ";"+
+    $b.tables[0].rows[$i][11] + ";"+
+    $b.tables[0].rows[$i][12] + ";"+
+    $b.tables[0].rows[$i][13] + ";"+
+    $b.tables[0].rows[$i][14] + ";"+
+    $b.tables[0].rows[$i][15] + ";"+
+    $b.tables[0].rows[$i][16] + ";"+
+    $b.tables[0].rows[$i][17] + ";"+
+    $b.tables[0].rows[$i][18] + ";"+
+    $b.tables[0].rows[$i][19]
+    
+    $data_all1="$data_all1$data1`r`n"
+    }
+
+
+    }else{
+    Write-Host ($time1 + " ; " + $time2 +";"+ $b.tables[0].rows.Count +":件(データなし)")
+    }
+
+    } # Foreach ($10minutes in $array2){ #10分間ループ
+
+
+} # Foreach ($24hours in $array1){ 24時間ループ
+
+
+    Write-Host $data_all1
+    if ($data_all1){
+    $outfilepath="kkkkkkkkkkkkk\"
+    $ouftilename1="table_xxx_data_"+ [string]$date1yyyymmdd+"-"+[string]$24hours+"-"+(Get-Date -Format "yyyyMMddHHmmss") +".txt"
+    $outfilename2=$outfilepath+$ouftilename1
+    Write-Output $data_all1 | Out-File $outfilename2 -Append
+    $data_all1=""
+    }
+
+} # foreach($cnt in 1..100){ 日付ループ
