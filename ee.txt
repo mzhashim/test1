@@ -1,0 +1,103 @@
+
+
+lqq(root?kali202302vmware)-[~/20230630_chrome/20250317_python_misp]
+mq# cat misp2sentinel_v1.py
+import requests
+import json
+
+# 1. OAuth 2.0 トークン取得
+url = "https://login.microsoftonline.com/8b3790cd-3127-42f6-963b-ca5763a2ab93c/oauth2/v2.0/token"
+body = {
+    "client_id": "6f338729-95e6-444e-9467-1d1b6fa71f24",
+    "scope": "https://management.azure.com/.default",
+    "client_secret": "QKe8Q~6mmOvWbB9LJPA~KXZuEzAEIffUM5xwHcEUc",
+    "grant_type": "client_credentials"
+}
+
+res = requests.post(url, data=body)
+res.raise_for_status()  # エラーが発生した場合に例外を発生させる
+access_token = res.json()["access_token"]
+
+# 2. Threat Intelligence 指標の作成
+url2 = "https://management.azure.com/subscriptions/e626783a-a67b-4985-bb15-57d0b9aa0ba4/resourceGroups/20220216resourcegroup1/providers/Microsoft.OperationalInsights/workspaces/20221022-log-analytics-workspace/providers/Microsoft.SecurityInsights/threatIntelligence/main/createIndicator?api-version=2024-01-01-preview"
+
+body2 = {
+    "kind": "indicator",
+    "properties": {
+        "source": "Azure Sentinel",
+        "threatIntelligenceTags": [
+            "new schema"
+        ],
+        "displayName": "new schema",
+        "confidence": 78,
+        "createdByRef": "contoso@contoso.com",
+        "description": "2339debugging indicators",
+        "externalReferences": [],
+        "granularMarkings": [],
+        "threatTypes": [
+            "compromised"
+        ],
+        "killChainPhases": [],
+        "labels": [],
+        "modified": "",
+        "pattern": "[url:value = 'https://20231021-2337232.com']",
+        "patternType": "url",
+        "revoked": False,
+        "validFrom": "2021-09-15T17:44:00.114052Z",
+        "validUntil": ""
+    }
+}
+
+headers2 = {
+    "Content-Type": "application/json",
+    "Authorization": f"Bearer {access_token}"
+}
+
+res2 = requests.post(url2, json=body2, headers=headers2)
+res2.raise_for_status()
+print(res2.json())
+
+lqq(root?kali202302vmware)-[~/20230630_chrome/20250317_python_misp]
+mq# python3 misp2sentinel_v1.py
+{'id': '/subscriptions/e626783a-a67b-4985-bb15-57d0b9aa0ba4/resourceGroups/20220216resourcegroup1/providers/Microsoft.OperationalInsights/workspaces/20221022-log-analytics-workspace/providers/Microsoft.SecurityInsights/threatIntelligence/main/indicators/78457fb8-0043-e8ab-8104-5e44c5afe3c5', 'name': '78457fb8-0043-e8ab-8104-5e44c5afe3c5', 'etag': '"c1007611-0000-2300-0000-67d8271e0000"', 'type': 'Microsoft.SecurityInsights/threatIntelligence/main/indicators', 'kind': 'indicator', 'properties': {'confidence': 78, 'created': '2025-03-17T13:43:58.7389558Z', 'createdByRef': 'contoso@contoso.com', 'extensions': {'sentinel-ext': {'severity': None}}, 'externalId': 'indicator--823d9ae0-a18d-c49a-c380-03d65a357032', 'externalReferences': [], 'granularMarkings': [], 'labels': ['new schema'], 'lastUpdatedTimeUtc': '2025-03-17T13:43:58.7416957Z', 'revoked': False, 'source': 'Microsoft Sentinel', 'threatIntelligenceTags': ['new schema'], 'displayName': 'new schema', 'description': '2339debugging indicators', 'threatTypes': ['compromised'], 'killChainPhases': [], 'parsedPattern': [{'patternTypeKey': 'url', 'patternTypeValues': [{'valueType': 'url', 'value': 'https://20231021-2337232.com'}]}], 'pattern': "[url:value = 'https://20231021-2337232.com']", 'patternType': 'url', 'validFrom': '2021-09-15T17:44:00.114052Z'}}
+
+lqq(root?kali202302vmware)-[~/20230630_chrome/20250317_python_misp]
+mq#
+⇒
+ThreatIntelligenceIndicator
+|where TimeGenerated >ago(10min)
+|where Url contains "20231021-2337232.com"
+⇒
+TenantId
+c2d65106-2acb-4a85-8405-3017d396f715
+TimeGenerated [UTC]
+2025-03-17T13:45:10.0450864Z
+SourceSystem
+Microsoft Sentinel
+Action
+alert
+AzureTenantId
+8b3790cd-3127-42f6-963b-ca5763a2ab93
+ConfidenceScore
+78
+Description
+2339debugging indicators
+ExternalIndicatorId
+indicator--823d9ae0-a18d-c49a-c380-03d65a357032
+ExpirationDateTime [UTC]
+9999-12-31T23:59:59.9999999Z
+IndicatorId
+D9FF20A58F3B076E005CBAC3A4073080A65C41A63A46A8217466AB1840908C42
+ThreatType
+compromised
+Active
+true
+Tags
+["new schema"]
+TrafficLightProtocolLevel
+unknown
+Url
+https://20231021-2337232.com
+Type
+ThreatIntelligenceIndicator
+
