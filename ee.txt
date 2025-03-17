@@ -6,11 +6,11 @@ import requests
 import json
 
 # 1. OAuth 2.0 トークン取得
-url = "https://login.microsoftonline.com/8b3790cd-3127-42f6-963b-ca5763a2ab93c/oauth2/v2.0/token"
+url = "https://login.microsoftonline.com//oauth2/v2.0/token"
 body = {
-    "client_id": "6f338729-95e6-444e-9467-1d1b6fa71f24",
+    "client_id": "",
     "scope": "https://management.azure.com/.default",
-    "client_secret": "QKe8Q~6mmOvWbB9LJPA~KXZuEzAEIffUM5xwHcEUc",
+    "client_secret": "",
     "grant_type": "client_credentials"
 }
 
