@@ -2101,15 +2101,3 @@ https://zenn.dev/shimiyu/scraps/5b9f80a3ab65e2
 
 --------------------------------------------------------------------------------------------
 
-
-
-
-
-
-結果表示
-https://learn.microsoft.com/ja-jp/credentials/certifications/identity-and-access-administrator/practice/results?assessmentId=60&practice-assessment-type=certification&snapshotId=e6bf043b-a073-49ca-a31a-9508672fc5f7
-
-
-結果表示(8/11,1:20)
-https://learn.microsoft.com/ja-jp/credentials/certifications/identity-and-access-administrator/practice/results?assessmentId=60&practice-assessment-type=certification&snapshotId=b75cd72e-1ac6-4e66-bac5-efd676102d63
-
