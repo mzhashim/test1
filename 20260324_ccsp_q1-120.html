@@ -1,0 +1,266 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>CCSP Quiz Perfect Edition</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f0f2f5; display: flex; flex-direction: column; align-items: center; padding: 20px; margin: 0; }
+        .score-board { position: sticky; top: 10px; z-index: 1000; background: #fff; padding: 10px 20px; border-radius: 50px; box-shadow: 0 4px 15px rgba(0,0,0,0.2); margin-bottom: 20px; font-weight: bold; color: #1a73e8; border: 2px solid #1a73e8; }
+        
+        /* 強制的に1行5列を維持 */
+        .container { display: grid; grid-template-columns: repeat(5, 1fr); gap: 10px; width: 100%; max-width: 1800px; }
+        
+        .card { perspective: 1000px; height: 380px; cursor: pointer; }
+        .card-inner { position: relative; width: 100%; height: 100%; transition: transform 0.6s; transform-style: preserve-3d; border-radius: 8px; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        .card.is-flipped .card-inner { transform: rotateY(180deg); }
+        
+        .card-front, .card-back { position: absolute; width: 100%; height: 100%; backface-visibility: hidden; padding: 12px; box-sizing: border-box; border-radius: 8px; display: flex; flex-direction: column; }
+        .card-front { background: white; border: 1.5px solid #1a73e8; }
+        .card-back { background: #2c3e50; color: white; transform: rotateY(180deg); overflow-y: auto; }
+        
+        .q-num { font-size: 0.8em; font-weight: bold; color: #1a73e8; margin-bottom: 5px; }
+        .q-text { font-size: 0.85em; line-height: 1.4; height: 110px; overflow-y: auto; margin-bottom: 10px; white-space: pre-wrap; }
+        .options { display: grid; gap: 5px; }
+        .opt-btn { font-size: 0.75em; text-align: left; padding: 8px; border: 1px solid #ddd; border-radius: 4px; background: #f8f9fa; cursor: pointer; }
+        .opt-btn:hover { background: #e8f0fe; }
+        .opt-btn.correct { background: #4caf50 !important; color: white; border-color: #4caf50; }
+        .opt-btn.wrong { background: #f44336 !important; color: white; border-color: #f44336; }
+        
+        .ans-text { color: #f1c40f; font-weight: bold; margin: 10px 0; font-size: 0.9em; }
+        .explanation { font-size: 0.75em; line-height: 1.4; color: #ecf0f1; }
+
+        /* 不正解リストのエリア */
+        .wrong-list-area { width: 100%; max-width: 1800px; margin-top: 40px; background: white; padding: 20px; border-radius: 8px; border-top: 5px solid #f44336; box-shadow: 0 4px 8px rgba(0,0,0,0.1); }
+        #wrongItems { display: flex; flex-wrap: wrap; gap: 8px; list-style: none; padding: 0; }
+        #wrongItems li { background: #ffebee; color: #c62828; padding: 5px 15px; border-radius: 20px; font-size: 0.85em; font-weight: bold; border: 1px solid #ffcdd2; }
+    </style>
+</head>
+<body>
+
+<div class="score-board" id="score">Score: 0 / 0</div>
+
+<div class="container" id="quizContainer"></div>
+
+<div class="wrong-list-area">
+    <h3 style="margin-top:0; color:#c62828;">不正解リスト (Q番号)</h3>
+    <ul id="wrongItems"></ul>
+</div>
+
+<script>
+// Q1-Q120の全データをここに入れていきます
+const allData = [
+    {q:"1", f:"SaaS環境内の次のタスクのうち、クラウドの顧客が責任を負わないものはどれですか？", o:["A","B","C","D"], ot:["A.認証メカニズム","B.ブランディング","C.トレーニング","D.ユーザーアクセス"], a:"A", e:"Explanation: The authentication mechanisms and implementations are the responsibility of the cloud provider because they are core components of the application platform and service."},
+    {q:"2", f:"ユーザーアカウント/アクセスのレビューとメンテナンスに誰が関与する必要がありますか？", o:["A","B","C","D"], ot:["A.ユーザーのマネージャー","B.セキュリティマネージャー","C.経理部","D.インシデント対応チーム"], a:"A", e:"Answer: A"},
+    {q:"3", f:"次の用語のうち、リスク許容の一般的に使用されるカテゴリではないものはどれですか？", o:["A","B","C","D"], ot:["A.中程度","B.クリティカル","C.最小限","D.受け入れ"], a:"D", e:"Explanation: Accepted is not a risk acceptance category. The risk acceptance categories are minimal, low, moderate, high, and critical."},
+    {q:"4", f:"米国国務省は、技術輸出として知られているものとして何を管理していますか？", o:["A","B","C","D"], ot:["A.DRM","B.ITAR","C.EAR","D.EAL"], a:"B", e:"Explanation: The U.S. State Department manages ITAR, whereas the U.S. Commerce Department manages EAR."},
+    {q:"5", f:"プロバイダーが監視テストの責任共有の一環として、クラウドのお客様に提供しないものは次のうちどれですか？", o:["A","B","C","D"], ot:["A.監査ログ","B.DLPの結果","C.セキュリティ管理","D.ログ"], a:"C", e:"Explanation: The cloud provider will not provide actual security controls but will provide the output of various security logs and monitoring tools."},
+    {q:"6", f:"特定のシステムが従わなければならない法的規制の主な決定要因は何ですか？", o:["A","B","C","D"], ot:["A.データソース","B.物理的な場所","C.契約上の合意","D.サービスレベル契約"], a:"B", e:"Explanation: The primary factor that determines legal jurisdiction is the physical location of the systems."},
+    {q:"7", f:"オブジェクトストレージの保護に広く使用されている技術は次のうちどれですか？", o:["A","B","C","D"], ot:["A.TLS","B.HTTPS","C.VPN","D.IRM"], a:"D", e:"Explanation: Information Rights Management (IRM) is commonly used to protect object storage by embedding permissions and protection directly into the files."},
+    {q:"8", f:"BCDRの使用を最も魅力的にしているクラウドの側面はどれですか？", o:["A","B","C","D"], ot:["A.オンデマンドのセルフサービス","B.測定サービス","C.移植性","D.幅広いネットワークアクセス"], a:"B", e:"Explanation: Measured service is what makes BCDR very attractive within a cloud environment because a customer will only pay for the storage and resources they are using."},
+    {q:"9", f:"従来のファイルシステムとツリー構造に最も近いのはどれですか。", o:["A","B","C","D"], ot:["A.ボリュームストレージ","B.非構造化データ","C.オブジェクトストレージ","D.構造化データ"], a:"A", e:"Explanation: Volume storage is most similar to a traditional file system or tree structure used by operating systems."},
+    {q:"10", f:"要件収集プロセスへの入力として含まれないのは次のうちどれですか？", o:["A","B","C","D"], ot:["A.ユーザー","B.経営陣","C.規制当局","D.監査人"], a:"D", e:"Explanation: Auditors are not an input for the requirements gathering process; they verify that the processes and requirements have been met."},
+    {q:"11", f:"監査範囲ステートメントの一部として通常含まれないものは次のうちどれですか？", o:["A","B","C","D"], ot:["A.レポート","B.認証","C.請求","D.除外"], a:"C", e:"Explanation: Billing information is not part of an audit scope statement, which focuses on security, operations, and compliance."},
+    {q:"12", f:"クラウドプロバイダーが負う「絶対的な」責任は次のうちどれですか？", o:["A","B","C","D"], ot:["A.コンプライアンス","B.物理的セキュリティ","C.OSの監査","D.個人のセキュリティ"], a:"B", e:"Explanation: Physical security is the absolute responsibility of the cloud provider in any cloud model."},
+    {q:"13", f:"データセンターの設計にマクロレベルのアプローチを利用しているのはどれですか？", o:["A","B","C","D"], ot:["A.IDCA","B.BICSI","C.Uptime Institute","D.NFPA"], a:"A", e:"Explanation: IDCA utilizes a macro-level approach to data center design, covering all aspects and systems."},
+    {q:"14", f:"TLSプロトコルを構成する2つの主要なプロトコルは何ですか？", o:["A","B","C","D"], ot:["A.ハンドシェイクとレコード","B.トランスポートとセッション","C.認証と暗号化","D.記録と送信"], a:"A", e:"Explanation: TLS is composed of two layers: the TLS Record Protocol and the TLS Handshake Protocol."},
+    {q:"15", f:"SLAの評価指標（メトリクス）に通常含まれないものはどれですか？", o:["A","B","C","D"], ot:["A.ネットワークの可用性","B.ユーザーの総数","C.メモリ使用量","D.CPU負荷"], a:"B", e:"Explanation: The total number of users is not a performance metric for an SLA, although it might be a licensing factor."},
+    {q:"16", f:"BCDRプランを起動する一般的な理由ではないものはどれですか？", o:["A","B","C","D"], ot:["A.自然災害","B.大規模な停電","C.従業員の離職","D.テロ攻撃"], a:"C", e:"Explanation: Loss of staff is generally handled by HR and succession planning, not a BCDR plan."},
+    {q:"17", f:"使用しているクラウドモデルに関係なく、クラウドのお客様が常に責任を負うのはどれですか？", o:["A","B","C","D"], ot:["A.インフラ","B.プラットフォーム","C.アプリケーション","D.データ"], a:"D", e:"Explanation: The cloud customer is always responsible for their data, regardless of the cloud model used."},
+    {q:"18", f:"クラウドBCDRで一般的ではないモデルはどれですか？", o:["A","B","C","D"], ot:["A.クラウドから別のクラウドへのバックアップ","B.クラウドから別のプロバイダーへのバックアップ","C.同一プロバイダー内でのバックアップ","D.クラウドプロバイダーからプライベートクラウドへのバックアップ"], a:"D", e:"Explanation: Backing up from a public cloud provider to a private cloud is generally not a common or practical model."},
+    {q:"19", f:"組織間でID情報や認証資格情報を渡すために最も一般的に利用されるのは？", o:["A","B","C","D"], ot:["A.REST","B.SAML","C.SOAP","D.HTML"], a:"B", e:"Explanation: Security Assertion Markup Language (SAML) is the standard for exchanging authentication and authorization data between parties."},
+    {q:"20", f:"ISO/IEC標準において、情報開示の概念に最も関連するのはどれですか？", o:["A","B","C","D"], ot:["A.開示","B.透明性","C.開放性","D.ドキュメント化"], a:"B", e:"Explanation: Transparency is the concept of being open and honest about how data is handled and what services are provided."},
+    {q:"21", f:"どのSOCレポートが最も一般的であり、システムとその管理策の詳細な説明が含まれていますか？", o:["A","B","C","D"], ot:["A.SOC 1","B.SOC 2","C.SOC 3","D.SOC 4"], a:"B", e:"Explanation: SOC 2 provides a detailed description of the service provider's system and the suitability of the design and operating effectiveness of its controls."},
+    {q:"22", f:"クラウドのお客様とクラウドプロバイダーの間の契約において、法的な場所を定義する用語はどれですか？", o:["A","B","C","D"], ot:["A.管轄区域","B.居住地","C.場所","D.SLA"], a:"A", e:"Explanation: Jurisdiction is the legal term for where a contract is enforced and which laws apply."},
+    {q:"23", f:"マルチテナンシー環境において、データの分離を確実にするために使用される技術はどれですか？", o:["A","B","C","D"], ot:["A.暗号化","B.ハッシュ化","C.マスキング","D.トークン化"], a:"A", e:"Explanation: Encryption is the most effective way to ensure data separation in a multi-tenant environment."},
+    {q:"24", f:"データセンターの物理的設計において、火災検知と抑制の標準を提供しているのはどれですか？", o:["A","B","C","D"], ot:["A.NFPA","B.IDCA","C.BICSI","D.Uptime Institute"], a:"A", e:"Explanation: The National Fire Protection Association (NFPA) provides standards for fire detection and suppression systems."},
+    {q:"25", f:"APIのセキュリティを確保するために、特定のソースからのリクエスト数を制限する手法はどれですか？", o:["A","B","C","D"], ot:["A.レート制限","B.フィルタリング","C.暗号化","D.認証"], a:"A", e:"Explanation: Rate limiting is used to prevent abuse of an API by limiting the number of requests within a timeframe."},
+    {q:"26", f:"クラウド環境において、仮想マシン（VM）のイメージを保護するために重要なのはどれですか？", o:["A","B","C","D"], ot:["A.署名","B.圧縮","C.バックアップ","D.削除"], a:"A", e:"Explanation: Digital signatures ensure the integrity and authenticity of VM images."},
+    {q:"27", f:"データの機密性を維持するために、元のデータを無関係な値に置き換える手法はどれですか？", o:["A","B","C","D"], ot:["A.トークン化","B.暗号化","C.ハッシュ化","D.符号化"], a:"A", e:"Explanation: Tokenization replaces sensitive data with a non-sensitive equivalent (token) that has no extrinsic meaning."},
+    {q:"28", f:"クラウドにおけるアイデンティティ管理において、ユーザーが一度のログインで複数のシステムにアクセスできる機能は？", o:["A","B","C","D"], ot:["A.SSO","B.MFA","C.RBAC","D.ABAC"], a:"A", e:"Explanation: Single Sign-On (SSO) allows a user to authenticate once and access multiple systems."},
+    {q:"29", f:"クラウドプロバイダーが提供するセキュリティ管理策を評価するために、お客様が使用できる標準はどれですか？", o:["A","B","C","D"], ot:["A.CSA CCM","B.ISO 9001","C.ISO 14001","D.SLA"], a:"A", e:"Explanation: The Cloud Security Alliance (CSA) Cloud Controls Matrix (CCM) is specifically designed for assessing cloud security controls."},
+    {q:"30", f:"データの整合性を確認するために、データから生成される固定長の値を何と呼びますか？", o:["A","B","C","D"], ot:["A.ハッシュ","B.暗号鍵","C.証明書","D.トークン"], a:"A", e:"Explanation: A hash value is used to verify that data has not been altered."},
+    {q:"31", f:"クラウドにおける責任共有モデルにおいて、IaaSを使用する場合、パッチ適用は誰の責任ですか？", o:["A","B","C","D"], ot:["A.クラウドのお客様","B.クラウドプロバイダー","C.OSベンダー","D.共同責任"], a:"A", e:"Explanation: In IaaS, the customer is responsible for managing and patching the operating system and applications."},
+    {q:"32", f:"クラウドデータのライフサイクルにおいて、データが最初に入力または生成されるフェーズはどれですか？", o:["A","B","C","D"], ot:["A.作成","B.保存","C.使用","D.共有"], a:"A", e:"Explanation: Create is the first phase where data is generated or existing data is modified."},
+    {q:"33", f:"クラウド環境において、ネットワークトラフィックを監視し、不正なアクセスをブロックするデバイスはどれですか？", o:["A","B","C","D"], ot:["A.IPS","B.IDS","C.ルーター","D.スイッチ"], a:"A", e:"Explanation: An Intrusion Prevention System (IPS) monitors and takes action to block malicious traffic."},
+    {q:"34", f:"データの「静止状態（at rest）」での保護に最も一般的に使用されるのはどれですか？", o:["A","B","C","D"], ot:["A.ストレージレベルの暗号化","B.TLS","C.SSL","D.VPN"], a:"A", e:"Explanation: Encryption at the storage or file level is the primary method for protecting data at rest."},
+    {q:"35", f:"クラウドプロバイダーが物理的な場所のセキュリティを証明するために提供できるものはどれですか？", o:["A","B","C","D"], ot:["A.第三者監査レポート","B.監視カメラの映像","C.入館ログ","D.設計図"], a:"A", e:"Explanation: Third-party audit reports (like SOC 2) provide verification of physical and logical controls."},
+    {q:"36", f:"クラウド利用において、特定のベンダーに依存しすぎて他社への移行が困難になるリスクを何と呼びますか？", o:["A","B","C","D"], ot:["A.ベンダーロックイン","B.ベンダーロックアウト","C.マルチテナンシー","D.相互運用性"], a:"A", e:"Explanation: Vendor lock-in occurs when a customer is unable to move their data or services away from a provider easily."},
+    {q:"37", f:"Webアプリケーションに対する一般的な攻撃（SQLインジェクションなど）を防ぐために使用されるのはどれですか？", o:["A","B","C","D"], ot:["A.WAF","B.IDS","C.次世代ファイアウォール","D.VPN"], a:"A", e:"Explanation: A Web Application Firewall (WAF) is specifically designed to protect web applications from common attacks."},
+    {q:"38", f:"クラウド環境でリソースを論理的に分離し、自分専用のネットワークを構築できる機能はどれですか？", o:["A","B","C","D"], ot:["A.VPC","B.CDN","C.SDN","D.MPLS"], a:"A", e:"Explanation: A Virtual Private Cloud (VPC) provides a private, isolated section of the public cloud."},
+    {q:"39", f:"データのライフサイクルにおいて、不要になったデータを安全に消去するフェーズはどれですか？", o:["A","B","C","D"], ot:["A.破棄","B.アーカイブ","C.保存","D.使用"], a:"A", e:"Explanation: Destroy is the final phase where data is permanently removed."},
+    {q:"40", f:"SOC 3レポートとSOC 2レポートの主な違いは何ですか？", o:["A","B","C","D"], ot:["A.SOC 3は一般公開用である","B.SOC 3はより詳細である","C.SOC 3は非公開である","D.SOC 3は財務のみを扱う"], a:"A", e:"Explanation: SOC 3 is a general-use report that summarizes the information in SOC 2 for a public audience."},
+{q:"41", f:"クラウドコンピューティングにおける「弾力性（Elasticity）」の定義に最も近いのはどれですか？", o:["A","B","C","D"], ot:["A.ピーク負荷に合わせてリソースを固定する能力","B.リソースの需要に合わせて動的に拡大・縮小する能力","C.ハードウェアの物理的な柔軟性","D.ネットワークの遅延を最小限に抑える能力"], a:"B", e:"Answer: B"},
+    {q:"42", f:"クラウド環境において、データがメモリ内で処理されている最中の状態を何と呼びますか？", o:["A","B","C","D"], ot:["A.Data at rest","B.Data in transit","C.Data in use","D.Data in archive"], a:"C", e:"Answer: C"},
+    {q:"43", f:"STRIDE脅威モデルにおいて、情報の漏洩（Information Disclosure）に対応する防御策はどれですか？", o:["A","B","C","D"], ot:["A.認証","B.デジタル署名","C.暗号化","D.入力バリデーション"], a:"C", e:"Answer: C"},
+    {q:"44", f:"SOC 1レポートの主な目的は何ですか？", o:["A","B","C","D"], ot:["A.セキュリティ、可用性、機密性の報告","B.財務報告に係る内部統制の評価","C.一般公開用の簡易レポート","D.物理的セキュリティの証明"], a:"B", e:"Answer: B"},
+    {q:"45", f:"ISO/IEC 27018が特に対象としているものはどれですか？", o:["A","B","C","D"], ot:["A.パブリッククラウドにおけるPIIの保護","B.クラウドの相互運用性","C.データセンターの設計基準","D.ソフトウェア開発ライフサイクル"], a:"A", e:"Answer: A"},
+    {q:"46", f:"クラウドデータのライフサイクルにおける「保存（Store）」フェーズと「アーカイブ（Archive）」フェーズの主な違いは何ですか？", o:["A","B","C","D"], ot:["A.使用される暗号化アルゴリズム","B.データの冗長性レベル","C.データの可用性とアクセスの頻度","D.データの法的所有権"], a:"C", e:"Answer: C"},
+    {q:"47", f:"「暗号化消去（Crypto-shredding）」のプロセスにおいて、最も重要な要素は何ですか？", o:["A","B","C","D"], ot:["A.バックアップデータの削除","B.暗号鍵の破棄","C.ストレージメディアの物理的破壊","D.データの複数回上書き"], a:"B", e:"Answer: B"},
+    {q:"48", f:"クラウド環境において、管理プレーン（Management Plane）へのアクセスを保護するために最も推奨される手法はどれですか？", o:["A","B","C","D"], ot:["A.強力なパスワードのみ","B.多要素認証（MFA）","C.IPアドレス制限のみ","D.匿名アクセスの許可"], a:"B", e:"Answer: B"},
+    {q:"49", f:"次のうち、クラウドにおける「相互運用性（Interoperability）」を説明しているものはどれですか？", o:["A","B","C","D"], ot:["A.コンポーネントが組み合わされて動作する能力","B.サービスを別のプロバイダーへ移動する能力","C.システムの稼働時間を維持する能力","D.コストを削減する能力"], a:"A", e:"Answer: A"},
+    {q:"50", f:"欧州連合（EU）の一般データ保護規則（GDPR）において、データの処理方法を決定する個人または組織を何と呼びますか？", o:["A","B","C","D"], ot:["A.データプロセッサ","B.データコントローラー","C.データサブジェクト","D.データ保護責任者（DPO）"], a:"B", e:"Answer: B"},
+    {q:"51", f:"BCDR戦略において、データの損失が許容される最大時間を指す用語はどれですか？", o:["A","B","C","D"], ot:["A.RTO","B.RPO","C.MTPD","D.SLA"], a:"B", e:"Answer: B"},
+    {q:"52", f:"クラウドにおける「コミュニティクラウド」配備モデルの主な特徴は何ですか？", o:["A","B","C","D"], ot:["A.不特定多数のユーザーに提供される","B.単一の組織のみが使用する","C.共通の関心事を持つ特定の組織間で共有される","D.公的機関のみが利用できる"], a:"C", e:"Answer: C"},
+    {q:"53", f:"データベースのセキュリティにおいて、特定の列全体を隠す手法を何と呼びますか？", o:["A","B","C","D"], ot:["A.動的マスキング","B.静的マスキング","C.トークン化","D.セルレベル暗号化"], a:"B", e:"Answer: B"},
+    {q:"54", f:"クラウドのインフラストラクチャにおいて、ハイパーバイザー（VMM）の主な役割は何ですか？", o:["A","B","C","D"], ot:["A.ネットワークトラフィックのフィルタリング","B.物理リソースの抽象化と仮想マシンの管理","C.ユーザー認証の処理","D.データの長期保存"], a:"B", e:"Answer: B"},
+    {q:"55", f:"機密データの漏洩を防ぐために、外部へのトラフィックをコンテンツベースでスキャンする技術はどれですか？", o:["A","B","C","D"], ot:["A.IDS","B.IPS","C.DLP","D.SIEM"], a:"C", e:"Answer: C"},
+    {q:"56", f:"OAuth 2.0プロトコルにおいて、主にやり取りされるものは何ですか？", o:["A","B","C","D"], ot:["A.ユーザー名とパスワード","B.アクセストークン","C.デジタル証明書","D.生体認証データ"], a:"B", e:"Answer: B"},
+    {q:"57", f:"データの物理的な場所（国や地域）に基づいて適用される法律が異なる問題を何と呼びますか？", o:["A","B","C","D"], ot:["A.データポータビリティ","B.データソブリンティ（データ主権）","C.データマイニング","D.データリテンション"], a:"B", e:"Answer: B"},
+    {q:"58", f:"クラウド環境での脆弱性スキャンにおいて、エージェントベースのスキャンの利点は何ですか？", o:["A","B","C","D"], ot:["A.ネットワーク負荷がかからない","B.オフラインのターゲットをスキャンできる","C.認証情報を管理せずに詳細な調査ができる","D.すべてのプロバイダーで許可されている"], a:"C", e:"Answer: C"},
+    {q:"59", f:"ソフトウェア開発のライフサイクル（SDLC）において、コードの実行を伴わずに脆弱性を探す手法はどれですか？", o:["A","B","C","D"], ot:["A.SAST","B.DAST","C.ペネトレーションテスト","D.Fuzzing"], a:"A", e:"Answer: A"},
+    {q:"60", f:"クラウドにおける「多層防御（Defense in Depth）」の概念に合致するのはどれですか？", o:["A","B","C","D"], ot:["A.単一の強力なファイアウォールを設置する","B.複数の異なるセキュリティ管理策を重ねる","C.すべてのデータを一つの場所に集約する","D.管理権限を一人に集中させる"], a:"B", e:"Answer: B"},
+    {q:"61", f:"クラウドプロバイダーがデータセンターの可用性を高めるために、複数の地理的領域にリソースを分散することを何と呼びますか？", o:["A","B","C","D"], ot:["A.マルチテナンシー","B.リージョン展開（マルチリージョン）","C.スケーリング","D.仮想化"], a:"B", e:"Answer: B"},
+    {q:"62", f:"クラウド上のデータを「破棄（Destroy）」する際、最も安全で一般的に推奨される論理的消去手法は？", o:["A","B","C","D"], ot:["A.OSレベルでの削除","B.暗号鍵の破棄（Crypto-shredding）","C.メディアのフォーマット","D.ゴミ箱を空にする"], a:"B", e:"Answer: B"},
+    {q:"63", f:"SaaSモデルにおいて、アプリケーションソフトウェアのパッチ適用に責任を持つのは誰ですか？", o:["A","B","C","D"], ot:["A.クラウドの顧客","B.クラウドプロバイダー","C.エンドユーザー","D.ハードウェアベンダー"], a:"B", e:"Answer: B"},
+    {q:"64", f:"クラウドサービスにおける「可用性（Availability）」を測定するために最も一般的に使用される指標はどれですか？", o:["A","B","C","D"], ot:["A.アップタイムの割合（%）","B.データ転送量","C.同時接続ユーザー数","D.応答時間（ミリ秒）"], a:"A", e:"Answer: A"},
+    {q:"65", f:"情報の「完全性（Integrity）」を保護するための主要な技術はどれですか？", o:["A","B","C","D"], ot:["A.暗号化","B.デジタル署名とハッシュ","C.バックアップ","D.ファイアウォール"], a:"B", e:"Answer: B"},
+    {q:"66", f:"クラウドフォレンジックにおいて、ライブフォレンジックが好まれる主な理由は何ですか？", o:["A","B","C","D"], ot:["A.コストが低い","B.揮発性メモリ内のデータを取得できる","C.プロバイダーの許可が不要","D.物理ディスクを直接操作できる"], a:"B", e:"Answer: B"},
+    {q:"67", f:"データの「使用（Use）」フェーズにおけるセキュリティ上の最大の懸念は何ですか？", o:["A","B","C","D"], ot:["A.通信経路での傍受","B.メモリ上でのデータの露出","C.バックアップの紛失","D.物理ディスクの盗難"], a:"B", e:"Answer: B"},
+    {q:"68", f:"クラウド環境において、ネットワークの境界をソフトウェア的に定義・制御する技術はどれですか？", o:["A","B","C","D"], ot:["A.SDN (Software Defined Networking)","B.VPC","C.MPLS","D.CDN"], a:"A", e:"Answer: A"},
+    {q:"69", f:"クラウドにおける特権アクセス管理（PAM）の目的は何ですか？", o:["A","B","C","D"], ot:["A.一般ユーザーの利便性向上","B.管理者権限の監視と制御","C.ネットワーク速度の最適化","D.ストレージ容量の節約"], a:"B", e:"Answer: B"},
+    {q:"70", f:"CSAの「クラウド・コントロール・マトリックス（CCM）」の主な役割は何ですか？", o:["A","B","C","D"], ot:["A.プロバイダーの価格比較","B.セキュリティ管理策の標準的な枠組みの提供","C.コードの脆弱性スキャン","D.データセンターの温度管理基準"], a:"B", e:"Answer: B"},
+    {q:"71", f:"クラウドにおける「ポータビリティ」の欠如が引き起こす問題はどれですか？", o:["A","B","C","D"], ot:["A.スプロール現象","B.ベンダーロックイン","C.DDoS攻撃","D.データの重複"], a:"B", e:"Answer: B"},
+    {q:"72", f:"クラウドの物理インフラにおいて、冷却効率を高めるためにサーバーラックを配置する手法はどれですか？", o:["A","B","C","D"], ot:["A.コールドアイル/ホットアイル","B.ランダム配置","C.積み重ね","D.壁際配置"], a:"A", e:"Answer: A"},
+    {q:"73", f:"Webアプリケーションにおける「インジェクション攻撃」を防ぐための最も効果的な開発手法は？", o:["A","B","C","D"], ot:["A.エラーメッセージの非表示化","B.プリペアドステートメント（パラメータ化クエリ）の使用","C.JavaScriptの無効化","D.ファイアウォールの強化"], a:"B", e:"Answer: B"},
+    {q:"74", f:"データの「共有（Share）」フェーズにおいて、特定のユーザーにのみ閲覧権限を与える技術は？", o:["A","B","C","D"], ot:["A.IRM/DRM","B.DLP","C.SSL/TLS","D.VPN"], a:"A", e:"Answer: A"},
+    {q:"75", f:"クラウドガバナンスにおける「ポリシー」の定義として適切なものはどれですか？", o:["A","B","C","D"], ot:["A.具体的な手順書","B.組織の方向性を示す高レベルな指針","C.使用する製品のリスト","D.違反者への罰則規定のみ"], a:"B", e:"Answer: B"},
+    {q:"76", f:"アイデンティティ管理において、ユーザーが持つ属性（所属、場所、時間など）に基づいてアクセスを制御する手法は？", o:["A","B","C","D"], ot:["A.RBAC","B.ABAC","C.MAC","D.DAC"], a:"B", e:"Answer: B"},
+    {q:"77", f:"クラウドにおける「監査（Audit）」の目的は何ですか？", o:["A","B","C","D"], ot:["A.システムの性能を向上させる","B.管理策が意図した通りに機能しているかを検証する","C.新しい機能を開発する","D.ライセンス料を計算する"], a:"B", e:"Answer: B"},
+    {q:"78", f:"クラウドプロバイダーが第三者認証（ISO 27001など）を取得している場合、顧客にとっての利点は何ですか？", o:["A","B","C","D"], ot:["A.追加のセキュリティ対策が不要になる","B.一定のセキュリティ基準を満たしているという信頼性が得られる","C.サービス料金が安くなる","D.責任がすべてプロバイダーに移転する"], a:"B", e:"Answer: B"},
+    {q:"79", f:"クラウド環境でのバックアップにおいて、地理的な分散（オフサイトバックアップ）が必要な主な理由は？", o:["A","B","C","D"], ot:["A.通信コストの削減","B.広域災害によるデータ消失リスクの回避","C.検索速度の向上","D.暗号化を不要にするため"], a:"B", e:"Answer: B"},
+    {q:"80", f:"データセンターの物理的セキュリティにおいて、最初の防御ラインとなるのはどれですか？", o:["A","B","C","D"], ot:["A.バイオメトリクス","B.境界フェンスや周囲の壁","C.マントラップ（二重扉）","D.サーバーラックの鍵"], a:"B", e:"Answer: B"},
+{q:"81", f:"クラウド環境において、仮想化によって複数のOSが同じ物理ハードウェア上で動作することを何と呼びますか？", o:["A","B","C","D"], ot:["A.マルチテナンシー","B.サンドボックス","C.リソースプーリング","D.スケーラビリティ"], a:"A", e:"Answer: A"},
+    {q:"82", f:"クラウドデータのライフサイクルにおいて、データがバックアップされ、法的な理由で長期間保管される状態はどれですか？", o:["A","B","C","D"], ot:["A.保存 (Store)","B.使用 (Use)","C.アーカイブ (Archive)","D.破棄 (Destroy)"], a:"C", e:"Answer: C"},
+    {q:"83", f:"クラウドプロバイダーが提供する、特定のアプリケーション機能をAPI経由で利用するモデルはどれですか？", o:["A","B","C","D"], ot:["A.IaaS","B.PaaS","C.SaaS","D.SECaaS"], a:"C", e:"Answer: C"},
+    {q:"84", f:"データの機密性を保護するために、認可されたユーザーのみが復号できる形式に変換することを何と呼びますか？", o:["A","B","C","D"], ot:["A.ハッシュ化","B.暗号化","C.マスキング","D.トークン化"], a:"B", e:"Answer: B"},
+    {q:"85", f:"クラウドにおける「共有責任モデル」において、物理的なデータセンターのセキュリティに責任を持つのは誰ですか？", o:["A","B","C","D"], ot:["A.クラウドの顧客","B.クラウドプロバイダー","C.政府機関","D.サードパーティ監査人"], a:"B", e:"Answer: B"},
+    {q:"86", f:"次のうち、クラウドにおける「オンデマンド・セルフサービス」を説明しているものはどれですか？", o:["A","B","C","D"], ot:["A.プロバイダーの担当者を介さずにリソースを自動的に取得できる","B.電話でリソースを注文する","C.月額固定料金で利用する","D.物理サーバーを自分で設置する"], a:"A", e:"Answer: A"},
+    {q:"87", f:"クラウド環境で、機密情報の漏洩を防ぐためにデータの動きを監視・制御するシステムはどれですか？", o:["A","B","C","D"], ot:["A.IDS","B.IPS","C.DLP","D.SIEM"], a:"C", e:"Answer: C"},
+    {q:"88", f:"クラウドにおける事業継続計画（BCP）において、代替サイトとして即座に切り替え可能なサイトを何と呼びますか？", o:["A","B","C","D"], ot:["A.ホットサイト","B.ウォームサイト","C.コールドサイト","D.バックアップサイト"], a:"A", e:"Answer: A"},
+    {q:"89", f:"クラウド環境での脆弱性管理において、システムに対する攻撃をシミュレーションして弱点を見つけるテストを何と呼びますか？", o:["A","B","C","D"], ot:["A.脆弱性スキャン","B.ペネトレーションテスト","C.コンプライアンス監査","D.リスクアセスメント"], a:"B", e:"Answer: B"},
+    {q:"90", f:"SOC 2 Type 2レポートが提供する情報の主な特徴は何ですか？", o:["A","B","C","D"], ot:["A.特定の時点の管理策の設計","B.一定期間にわたる管理策の運用の有効性","C.財務情報の正確性","D.プロバイダーの市場シェア"], a:"B", e:"Answer: B"},
+    {q:"91", f:"クラウド環境において、ネットワーク上の通信を暗号化するために一般的に使用されるプロトコルはどれですか？", o:["A","B","C","D"], ot:["A.FTP","B.Telnet","C.TLS","D.SNMP"], a:"C", e:"Answer: C"},
+    {q:"92", f:"クラウド上のデータを「論理的」に消去し、復元を不可能にするために暗号鍵を破棄する手法はどれですか？", o:["A","B","C","D"], ot:["A.物理的破壊","B.上書き","C.クリプト・シュレッディング","D.消磁"], a:"C", e:"Answer: C"},
+    {q:"93", f:"アイデンティティ管理において、ユーザーが一度の認証で許可された複数のサービスにアクセスできる仕組みはどれですか？", o:["A","B","C","D"], ot:["A.多要素認証 (MFA)","B.シングルサインオン (SSO)","C.役割ベースのアクセス制御 (RBAC)","D.特権アクセス管理 (PAM)"], a:"B", e:"Answer: B"},
+    {q:"94", f:"データの完全性を確認するために、データから生成される一方向性の値を何と呼びますか？", o:["A","B","C","D"], ot:["A.デジタル署名","B.ハッシュ値","C.秘密鍵","D.公開鍵"], a:"B", e:"Answer: B"},
+    {q:"95", f:"クラウドプロバイダーが、複数の顧客に対して物理リソースを効率的に割り当てる能力を何と呼びますか？", o:["A","B","C","D"], ot:["A.リソースプーリング","B.スケーラビリティ","C.ポータビリティ","D.相互運用性"], a:"A", e:"Answer: A"},
+    {q:"96", f:"クラウド環境において、承認されていないクラウドサービスの利用が引き起こすリスクを何と呼びますか？", o:["A","B","C","D"], ot:["A.ベンダーロックイン","B.シャドーIT","C.マルチテナンシー","D.スプロール現象"], a:"B", e:"Answer: B"},
+    {q:"97", f:"クラウドのセキュリティ標準である「ISO/IEC 27017」の主な内容はどれですか？", o:["A","B","C","D"], ot:["A.個人情報の保護","B.クラウドサービスのためのセキュリティ管理策の実装指針","C.データセンターの物理設計","D.ネットワーク速度の基準"], a:"B", e:"Answer: B"},
+    {q:"98", f:"PaaSモデルにおいて、ランタイム環境やミドルウェアのセキュリティ責任を持つのは誰ですか？", o:["A","B","C","D"], ot:["A.クラウドの顧客","B.クラウドプロバイダー","C.ソフトウェアベンダー","D.共同責任"], a:"B", e:"Answer: B"},
+    {q:"99", f:"クラウド環境でのフォレンジック調査において、物理ディスクのイメージ取得が困難な理由として適切なものはどれですか？", o:["A","B","C","D"], ot:["A.データが暗号化されていないため","B.物理的な場所が不明であるか、アクセスが制限されているため","C.クラウド上にはデータが存在しないため","D.ログが多すぎるため"], a:"B", e:"Answer: B"},
+    {q:"100", f:"クラウド上のデータの機密性、完全性、可用性のうち、冗長化によって主に強化されるのはどれですか？", o:["A","B","C","D"], ot:["A.機密性","B.完全性","C.可用性","D.真正性"], a:"C", e:"Answer: C"},
+    {q:"101", f:"どのSOCレポートが財務報告の内部統制に関連していますか？", o:["A","B","C","D"], ot:["A.SOC 1","B.SOC 2","C.SOC 3","D.SOC 4"], a:"A", e:"Answer: A"},
+    {q:"102", f:"クラウドデータのライフサイクルで、データが作成または更新されるフェーズは？", o:["A","B","C","D"], ot:["A.作成","B.保存","C.使用","D.共有"], a:"A", e:"Answer: A"},
+    {q:"103", f:"物理的なデータセンターにおける人身安全（Life Safety）の最優先事項は？", o:["A","B","C","D"], ot:["A.サーバーの保護","B.データのバックアップ","C.人命の安全","D.ダウンタイムの回避"], a:"C", e:"Answer: C"},
+    {q:"104", f:"OAuth 2.0において、承認されたことを示すために使用されるものは？", o:["A","B","C","D"], ot:["A.ユーザー名","B.アクセストークン","C.パスワード","D.証明書"], a:"B", e:"Answer: B"},
+    {q:"105", f:"データの「静止状態 (at rest)」での暗号化に最も適した手法は？", o:["A","B","C","D"], ot:["A.TLS","B.AES","C.SSL","D.HTTP"], a:"B", e:"Answer: B"},
+    {q:"106", f:"クラウドにおける「測定サービス (Measured Service)」の利点は？", o:["A","B","C","D"], ot:["A.使用した分だけ支払う","B.常に定額である","C.無制限に使用できる","D.料金が不明確になる"], a:"A", e:"Answer: A"},
+    {q:"107", f:"クラウドプロバイダー間でのデータの移動を容易にする性質は？", o:["A","B","C","D"], ot:["A.ポータビリティ","B.相互運用性","C.可用性","D.俊敏性"], a:"A", e:"Answer: A"},
+    {q:"108", f:"クラウド環境でWebアプリケーションを攻撃から守るためのツールは？", o:["A","B","C","D"], ot:["A.WAF","B.VPN","C.IDS","D.VPC"], a:"A", e:"Answer: A"},
+    {q:"109", f:"BCDRにおけるRPO（目標復旧時点）が示すものは？", o:["A","B","C","D"], ot:["A.復旧にかかる時間","B.許容されるデータの損失量","C.復旧後の性能","D.復旧チームの人数"], a:"B", e:"Answer: B"},
+    {q:"110", f:"CSA CCM（Cloud Controls Matrix）の目的は？", o:["A","B","C","D"], ot:["A.プロバイダーの価格表","B.セキュリティ管理策の評価フレームワーク","C.開発ツールのリスト","D.法律の原文"], a:"B", e:"Answer: B"},
+    {q:"111", f:"データのライフサイクルにおいて「共有 (Share)」フェーズの後に行われることが多いのは？", o:["A","B","C","D"], ot:["A.作成","B.アーカイブ","C.収集","D.分類"], a:"B", e:"Answer: B"},
+    {q:"112", f:"ハイパーバイザーの脆弱性により、あるVMから別のVMへ不正アクセスすることを何と呼びますか？", o:["A","B","C","D"], ot:["A.VMエスケープ","B.VMスプロール","C.DoS攻撃","D.中間者攻撃"], a:"A", e:"Answer: A"},
+    {q:"113", f:"クラウドにおける「広範なネットワークアクセス」の意味は？", o:["A","B","C","D"], ot:["A.特定のPCからのみアクセス可能","B.様々なデバイスや場所から標準的なメカニズムでアクセス可能","C.専用線が必須である","D.オフラインでも利用できる"], a:"B", e:"Answer: B"},
+    {q:"114", f:"データセンターの火災抑制で、水を使わないガス系消火剤の利点は？", o:["A","B","C","D"], ot:["A.安価である","B.IT機器へのダメージを最小限に抑える","C.火を大きくする","D.酸素を増やす"], a:"B", e:"Answer: B"},
+    {q:"115", f:"データのライフサイクルにおいて、DLPが最も効果を発揮するフェーズは？", o:["A","B","C","D"], ot:["A.作成","B.共有","C.アーカイブ","D.破棄"], a:"B", e:"Answer: B"},
+    {q:"116", f:"クラウド環境でのログ管理において、整合性を保つために重要なことは？", o:["A","B","C","D"], ot:["A.削除の自由","B.時刻同期 (NTP)","C.圧縮の禁止","D.ローカルのみに保存"], a:"B", e:"Answer: B"},
+    {q:"117", f:"米国の医療情報保護法であるHIPAAが対象とする情報は？", o:["A","B","C","D"], ot:["A.財務情報","B.個人健康情報 (PHI)","C.クレジットカード番号","D.教育記録"], a:"B", e:"Answer: B"},
+    {q:"118", f:"IaaS、PaaS、SaaSのうち、顧客の管理範囲が最も広いのは？", o:["A","B","C","D"], ot:["A.IaaS","B.PaaS","C.SaaS","D.すべて同じ"], a:"A", e:"Answer: A"},
+    {q:"119", f:"クラウド環境でのペネトレーションテストを実施する際に不可欠な手続きは？", o:["A","B","C","D"], ot:["A.サーバーの停止","B.プロバイダーへの事前通知と承認","C.パスワードの公開","D.週末の深夜に行うこと"], a:"B", e:"Answer: B"},
+    {q:"120", f:"クラウドにおけるデータのライフサイクルは、どのフェーズで終了しますか？", o:["A","B","C","D"], ot:["A.アーカイブ","B.共有","C.使用","D.破棄"], a:"D", e:"Answer: D"}
+
+
+];
+
+const container = document.getElementById('quizContainer');
+const scoreDisp = document.getElementById('score');
+const wrongUl = document.getElementById('wrongItems');
+
+let totalCount = 0;
+let correctCount = 0;
+let wrongs = new Set();
+
+function updateScore() {
+    scoreDisp.innerText = `Score: ${correctCount} / ${totalCount}`;
+}
+
+function updateWrongList() {
+    wrongUl.innerHTML = '';
+    const sortedWrongs = Array.from(wrongs).sort((a, b) => a - b);
+    sortedWrongs.forEach(num => {
+        const li = document.createElement('li');
+        li.innerText = `Q${num}`;
+        wrongUl.appendChild(li);
+    });
+}
+
+function renderCards() {
+    allData.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'card';
+        
+        const inner = document.createElement('div');
+        inner.className = 'card-inner';
+
+        // 表面
+        const front = document.createElement('div');
+        front.className = 'card-front';
+        front.innerHTML = `<div class="q-num">Question ${item.q}</div><div class="q-text">${item.f}</div>`;
+
+        const opts = document.createElement('div');
+        opts.className = 'options';
+        item.ot.forEach((text, i) => {
+            const btn = document.createElement('button');
+            btn.className = 'opt-btn';
+            btn.innerText = text;
+            btn.onclick = (e) => {
+                e.stopPropagation();
+                if(card.classList.contains('done')) return;
+                
+                totalCount++;
+                const isCorrect = (item.o[i] === item.a);
+                if(isCorrect) {
+                    correctCount++;
+                    btn.classList.add('correct');
+                } else {
+                    btn.classList.add('wrong');
+                    wrongs.add(parseInt(item.q));
+                    updateWrongList();
+                }
+                updateScore();
+                card.classList.add('done');
+                setTimeout(() => card.classList.add('is-flipped'), 400);
+            };
+            opts.appendChild(btn);
+        });
+        front.appendChild(opts);
+
+        // 裏面
+        const back = document.createElement('div');
+        back.className = 'card-back';
+        back.innerHTML = `
+            <div class="q-num" style="color:#bdc3c7;">Question ${item.q} 解説</div>
+            <div class="ans-text">正解: ${item.a}</div>
+            <div class="explanation">${item.e}</div>
+            <p style="font-size:0.7em; color:#7f8c8d; margin-top:20px;">[クリックして表面へ]</p>
+        `;
+        
+        // カード全体のクリックイベント (回答後のみ反転可能)
+        card.onclick = () => {
+            if(card.classList.contains('done')) {
+                card.classList.toggle('is-flipped');
+            }
+        };
+
+        inner.appendChild(front);
+        inner.appendChild(back);
+        card.appendChild(inner);
+        container.appendChild(card);
+    });
+}
+
+renderCards();
+</script>
+</body>
+</html>
