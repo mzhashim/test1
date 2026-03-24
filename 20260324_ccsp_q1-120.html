@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クラウドセキュリティ クイズ (Q1-Q120)</title>
+    <style>
+        body {
+            font-family: 'Helvetica Neue', Arial, sans-serif;
+            background-color: #f0f2f5;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            padding: 20px;
+            margin: 0;
+        }
+        h1 { color: #333; margin-bottom: 10px; }
+        
+        .score-board {
+            position: sticky;
+            top: 10px;
+            z-index: 1000;
+            background: #fff;
+            padding: 10px 25px;
+            border-radius: 50px;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+            margin-bottom: 25px;
+            font-weight: bold;
+            color: #1a73e8;
+            font-size: 1.1em;
+            border: 2px solid #1a73e8;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 15px;
+            width: 100%;
+            max-width: 1600px;
+            align-items: start;
+        }
+
+        @media (max-width: 1400px) { .container { grid-template-columns: repeat(4, 1fr); } }
+        @media (max-width: 1100px) { .container { grid-template-columns: repeat(3, 1fr); } }
+        @media (max-width: 800px) { .container { grid-template-columns: repeat(2, 1fr); } }
+        @media (max-width: 500px) { .container { grid-template-columns: 1fr; } }
+
+        .card {
+            background-color: transparent;
+            width: 100%;
+            min-height: 280px;
+            perspective: 1000px;
+            margin-bottom: 10px;
+            cursor: pointer;
+        }
+        .card-inner {
+            position: relative;
+            width: 100%;
+            height: 100%;
+            transition: transform 0.6s;
+            transform-style: preserve-3d;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-radius: 10px;
+            display: grid;
+        }
+        .card.is-flipped .card-inner {
+            transform: rotateY(180deg);
+        }
+        .card-front, .card-back {
+            grid-area: 1 / 1 / 2 / 2;
+            width: 100%;
+            -webkit-backface-visibility: hidden;
+            backface-visibility: hidden;
+            display: flex;
+            flex-direction: column;
+            padding: 15px;
+            box-sizing: border-box;
+            border-radius: 10px;
+        }
+        .card-front {
+            background-color: #ffffff;
+            border: 1.5px solid #1a73e8;
+            z-index: 2;
+        }
+        .card-back {
+            background-color: #2c3e50;
+            color: white;
+            transform: rotateY(180deg);
+        }
+        
+        .card-front-header {
+            font-weight: bold;
+            margin-bottom: 8px;
+            font-size: 0.8em;
+            color: #1a73e8;
+            border-bottom: 1px solid #eee;
+        }
+        .question-text {
+            font-weight: 500;
+            margin-bottom: 15px;
+            line-height: 1.4;
+            font-size: 0.85em;
+        }
+
+        .option-btn {
+            display: block;
+            width: 100%;
+            padding: 8px 12px;
+            margin-bottom: 6px;
+            background: #f8f9fa;
+            border: 1px solid #ddd;
+            border-radius: 5px;
+            text-align: left;
+            font-size: 0.8em;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+        .option-btn:hover { background: #e8f0fe; border-color: #1a73e8; }
+        .option-btn.correct { background-color: #4caf50 !important; color: white; border-color: #2e7d32; }
+        .option-btn.wrong { background-color: #f44336 !important; color: white; border-color: #c62828; }
+        .option-btn:disabled { cursor: default; }
+
+        .answer-text {
+            color: #f1c40f;
+            font-weight: bold;
+            font-size: 1em;
+            margin-bottom: 8px;
+            border-left: 3px solid #f1c40f;
+            padding-left: 8px;
+        }
+        .result-label {
+            display: inline-block;
+            padding: 2px 8px;
+            border-radius: 4px;
+            font-size: 0.8em;
+            margin-bottom: 10px;
+            font-weight: bold;
+        }
+        .label-correct { background: #4caf50; color: white; }
+        .label-wrong { background: #f44336; color: white; }
+        .explanation { font-size: 0.75em; line-height: 1.4; color: #ecf0f1; overflow-y: auto; max-height: 150px; }
+
+        .wrong-list-container {
+            width: 100%;
+            max-width: 1600px;
+            margin-top: 50px;
+            padding: 20px;
+            background: #fff;
+            border-radius: 10px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            border-top: 5px solid #f44336;
+        }
+        .wrong-list-title {
+            font-weight: bold;
+            color: #c62828;
+            margin-bottom: 15px;
+            font-size: 1.2em;
+            border-bottom: 2px solid #f44336;
+            padding-bottom: 5px;
+        }
+        #wrongList {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px;
+            list-style: none;
+            padding: 0;
+            margin: 0;
+        }
+        #wrongList li {
+            background: #ffebee;
+            color: #c62828;
+            padding: 5px 12px;
+            border-radius: 20px;
+            font-weight: bold;
+            font-size: 0.9em;
+        }
+    </style>
+</head>
+<body>
+
+<div class="score-board" id="scoreBoard">Score: 0 / 0 (0%)</div>
+<h1>Cloud Security Quiz (Q1-Q120)</h1>
+<p style="font-size: 0.9em; color: #666; margin-bottom: 20px;">回答後にカードをクリックすると問題文（表面）を再確認できます</p>
+
+<div class="container" id="cardContainer"></div>
+
+<div class="wrong-list-container">
+    <div class="wrong-list-title">不正解の問題番号</div>
+    <ul id="wrongList"></ul>
+</div>
+
+<script>
+let totalAnswered = 0;
+let correctCount = 0;
+let wrongQuestions = [];
+
+// ファイル(Q1-Q120.txt)から抽出した全データ
+const data = [
+    { q: "1", f: "SaaS環境内の次のタスクのうち、クラウドの顧客が責任を負わないものはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 認証メカニズム", "B. ブランディング", "C. トレーニング", "D. ユーザーアクセス"], ans: "A", b: "Answer: A\n解説: 認証メカニズムとその実装は、アプリケーションプラットフォームとサービスのコアコンポーネントであるため、プロバイダーの責任です。" },
+    { q: "2", f: "ユーザーアカウント/アクセスのレビューとメンテナンスに誰が関与する必要がありますか？", o: ["A", "B", "C", "D"], oText: ["A. ユーザーのマネージャー", "B. セキュリティマネージャー", "C. 経理部", "D. インシデント対応チーム"], ans: "A", b: "Answer: A" },
+    { q: "3", f: "次の用語のうち、リスク許容の一般的に使用されるカテゴリではないものはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 中程度", "B. クリティカル", "C. 最小限", "D. 受け入れ"], ans: "D", b: "Answer: D\n解説: 「受け入れ」はリスク許容のカテゴリではありません。" },
+    { q: "4", f: "米国国務省は、技術輸出として知られているものとして何を管理していますか？", o: ["A", "B", "C", "D"], oText: ["A. DRM", "B. ITAR", "C. EAR", "D. EAL"], ans: "B", b: "Answer: B\n解説: ITARは米国国務省のプログラムです。" },
+    { q: "7", f: "ファイルシステムレベルでの暗号化以外に、オブジェクトストレージを保護するために最も広く使用されている技術はどれですか。", o: ["A", "B", "C", "D"], oText: ["A. TLS", "B. HTTPS", "C. VPN", "D. IRM"], ans: "D", b: "Answer: D\n解説: IRM(情報権利管理)は、データの場所に関係なく制御を適用できます。" },
+    { q: "8", f: "クラウドコンピューティングのどの側面がBCDRの使用を最も魅力的にしていますか？", o: ["A", "B", "C", "D"], oText: ["A. オンデマンド", "B. 測定サービス", "C. 移植性", "D. ネットワークアクセス"], ans: "B", b: "Answer: B\n解説: 使用した分だけ支払う測定サービスにより、未使用の冗長ハードウェアのコストを削減できます。" },
+    { q: "9", f: "次のストレージタイプのうち、従来のファイルシステムとツリー構造に最も密接に関連しているのはどれですか。", o: ["A", "B", "C", "D"], oText: ["A. ボリューム", "B. 非構造化", "C. オブジェクト", "D. 構造化"], ans: "A", b: "Answer: A\n解説: ボリュームストレージは仮想ハードドライブとして機能します。" },
+    { q: "10", f: "アプリケーションまたはシステムの要件収集への入力として含まれないのは、次のうちどれですか？", o: ["A", "B", "C", "D"], oText: ["A. ユーザー", "B. 管理", "C. 規制当局", "D. 監査人"], ans: "D", b: "Answer: D" },
+    { q: "11", f: "監査範囲ステートメントの一部として含まれないものは次のうちどれですか？", o: ["A", "B", "C", "D"], oText: ["A. レポート", "B. 認証", "C. 請求", "D. 除外"], ans: "C", b: "Answer: C\n解説: 請求やコスト関連は契約段階で処理され、範囲ステートメントには含まれません。" },
+    { q: "12", f: "次のセキュリティの側面のうち、クラウドプロバイダーの責任はどれですか。", o: ["A", "B", "C", "D"], oText: ["A. 規制遵守", "B. 物理的なセキュリティ", "C. OSの監査", "D. 開発者の個人的なセキュリティ"], ans: "B", b: "Answer: B\n解説: 施設の物理的なセキュリティは常にクラウドプロバイダーの責任です。" },
+    { q: "13", f: "次のうちどれがデータセンターの設計にマクロレベルのアプローチを利用していますか？", o: ["A", "B", "C", "D"], oText: ["A. IDCA", "B. BICSI", "C. Uptime Institute", "D. NFPA"], ans: "A", b: "Answer: A\n解説: IDCAのInfinity Paradigmはマクロレベルのアプローチを採用しています。" },
+    { q: "14", f: "TLSが使用する2つのプロトコルは何ですか？", o: ["A", "B", "C", "D"], oText: ["A. ハンドシェイクと記録", "B. 転送して開始", "C. ハンドシェイクとトランスポート", "D. 記録して送信"], ans: "A", b: "Answer: A\n解説: ハンドシェイクで接続を確立し、記録(Record)でデータを送信します。" },
+    { q: "15", f: "SLAの一部として測定可能なメトリックと要件を持つコンポーネントではないものは次のうちどれですか？", o: ["A", "B", "C", "D"], oText: ["A. ネットワーク", "B. ユーザー", "C. メモリ", "D. CPU"], ans: "B", b: "Answer: B\n解説: ユーザー自身はSLAのメトリック対象としては不適切です。" },
+    { q: "16", f: "次のうち、BCDRプランをアクティブ化する一般的な理由ではないものはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 自然災害", "B. ユーティリティの停止", "C. スタッフの損失", "D. テロ攻撃"], ans: "C", b: "Answer: C" },
+    { q: "17", f: "クラウドモデルに関係なく、クラウドのお客様の責任は次のうちどれですか。", o: ["A", "B", "C", "D"], oText: ["A. インフラ", "B. プラットフォーム", "C. アプリ", "D. データ"], ans: "D", b: "Answer: D\n解説: データとそのセキュリティは常に顧客の責任です。" },
+    { q: "18", f: "クラウドBC / DRアクティビティで一般的に利用可能なモデルには、以下を除くすべてが含まれます。", o: ["A", "B", "C", "D"], oText: ["A. プライベート、クラウド", "B. プロバイダー、別プロバイダー", "C. 同一プロバイダー", "D. プロバイダー、プライベートプロバイダー"], ans: "D", b: "Answer: D" },
+    { q: "19", f: "組織間でユーザーIDと認証資格情報を渡すために、どのプロトコルを利用する可能性が最も高いですか？", o: ["A", "B", "C", "D"], oText: ["A. REST", "B. SAML", "C. SOAP", "D. HTML"], ans: "B", b: "Answer: B" },
+    { q: "20", f: "ISO / IEC標準のどの概念が、顧客に情報を提供するプロバイダーの必要性に関連していますか？", o: ["A", "B", "C", "D"], oText: ["A. 開示", "B. 透明度", "C. 開放性", "D. ドキュメント"], ans: "B", b: "Answer: B\n解説: 透明度(Transparency)は構成や運用の洞察を開示するプロセスです。" },
+    { q: "21", f: "監査スコープステートメントに通常含まれないものはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 目的", "B. 成果物", "C. 分類", "D. コスト"], ans: "D", b: "Answer: D" },
+    { q: "22", f: "CSA CCM内で定義されたセキュリティドメインではないものはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 財務", "B. 人材", "C. モバイル", "D. IAM"], ans: "A", b: "Answer: A" },
+    { q: "23", f: "TLSで実際の安全な通信とデータの送信を処理するのはどのプロトコルですか？", o: ["A", "B", "C", "D"], oText: ["A. 交渉", "B. ハンドシェイク", "C. 転送", "D. レコード"], ans: "D", b: "Answer: D\n解説: TLSレコードプロトコルが実際の暗号化とデータ送信を担います。" },
+    { q: "24", f: "IaaSソリューションで使用されているストレージタイプはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. ボリュームとブロック", "B. 構造化オブジェクト", "C. 一時的", "D. ボリュームとオブジェクト"], ans: "D", b: "Answer: D" },
+    { q: "25", f: "クラウドデータの移植性を低下させる手法はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 物理制限なし", "B. DRM/DLPの広範な使用", "C. 有利な契約", "D. 独自形式回避"], ans: "B", b: "Answer: B\n解説: DRMやDLPは認証や監視を強化しますが、移植性は低下させます。" },
+    { q: "26", f: "定期的な間隔外でBCDRレビューを実施する理由となる変更はどれですか。", o: ["A", "B", "C", "D"], oText: ["A. スタッフ", "B. アプリ", "C. 規制", "D. 管理"], ans: "B", b: "Answer: B" },
+    { q: "27", f: "使用した分のみ支払うクラウドの概念はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 消耗品", "B. 測定サービス", "C. 請求可能", "D. 従量制"], ans: "B", b: "Answer: B" },
+    { q: "28", f: "物理レイアウトの冗長性に含める必要がないものはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 境界セキュリティ", "B. 管理スタッフの構築", "C. 電気事業", "D. 通信線"], ans: "B", b: "Answer: B" },
+    { q: "29", f: "ホスト型クラウド移行時に考慮すべきリスクはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 無保護", "B. 公開", "C. 招待", "D. 環境外へのデータ送信"], ans: "D", b: "Answer: D" },
+    { q: "30", f: "ジョブや役割の割り当て、適切な実行の保証に関連する側面はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. SLA", "B. ガバナンス", "C. 規制", "D. 監査"], ans: "B", b: "Answer: B" },
+    { q: "31", f: "BCDRはどのセキュリティ概念に該当しますか？", o: ["A", "B", "C", "D"], oText: ["A. 守秘義務", "B. 可用性", "C. フォールトトレランス", "D. 完全性"], ans: "B", b: "Answer: B" },
+    { q: "32", f: "DASTは通常、どのような形式のテストですか？", o: ["A", "B", "C", "D"], oText: ["A. 乾いた畑", "B. ブラックボックス", "C. グレーボックス", "D. ホワイトボックス"], ans: "B", b: "Answer: B" },
+    { q: "33", f: "TLSは通信に何を提供しますか？", o: ["A", "B", "C", "D"], oText: ["A. 秘密,安全", "B. 安全,最適", "C. プライバシー,完全性", "D. 強化,秘密"], ans: "C", b: "Answer: C" },
+    { q: "34", f: "SOC 2監査で他の原則を監査する場合、必ず含める必要があるのはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 守秘義務", "B. プライバシー", "C. セキュリティ", "D. 可用性"], ans: "C", b: "Answer: C\n解説: 他の4原則を監査する場合、セキュリティ原則の同時監査が必須です。" },
+    { q: "35", f: "CSA CCMとは何ですか？", o: ["A", "B", "C", "D"], oText: ["A. SDLC要件", "B. 階層型リスト", "C. セキュリティドメイン配置のリスト", "D. 規制要件"], ans: "C", b: "Answer: C" },
+    { q: "36", f: "SOCI / SOCII / SOCIIIとは何ですか？", o: ["A", "B", "C", "D"], oText: ["A. リスク管理", "B. アクセス制御", "C. 監査レポート", "D. 開発フェーズ"], ans: "C", b: "Answer: C" },
+    { q: "37", f: "仮想化ネットワークの特性で、クラウドにリスクを追加するものはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 冗長性", "B. 拡張性", "C. 従量制", "D. セルフサービス"], ans: "A", b: "Answer: A" },
+    { q: "38", f: "ビジネス要件収集で決定できない情報はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 在庫", "B. 重要度", "C. 値", "D. 有用性"], ans: "D", b: "Answer: D" },
+    { q: "39", f: "不遵守時に法的制裁を課す可能性があるPIIのカテゴリはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 契約", "B. 管轄", "C. 規制", "D. リーガル"], ans: "C", b: "Answer: C" },
+    { q: "40", f: "DNSSECが軽減するように設計された攻撃は何ですか？", o: ["A", "B", "C", "D"], oText: ["A. 乗っ取り", "B. 盗聴", "C. なりすまし", "D. 漏洩"], ans: "C", b: "Answer: C\n解説: デジタル署名により、正規のサーバーからの応答であることを検証し、なりすましを防ぎます。" },
+    { q: "41", f: "TLSセッションで信頼を確立するための通常の手段は何ですか？", o: ["A", "B", "C", "D"], oText: ["A. 帯域外認証", "B. MFA", "C. PKI証明書", "D. 既存知識"], ans: "C", b: "Answer: C" },
+    { q: "42", f: "機密データから間接識別子を削除するプロセスはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. トークン化", "B. 暗号化", "C. 匿名化", "D. マスキング"], ans: "C", b: "Answer: C" },
+    { q: "44", f: "他顧客へのDoS攻撃から自組織を保護するのに役立つのはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 予約", "B. 測定サービス", "C. 制限", "D. シェア"], ans: "A", b: "Answer: A\n解説: 予約(Reservation)は最小限のリソース確保を保証します。" },
+    { q: "45", f: "消費できるリソースの最大量の制御を表すのはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 共有", "B. 予約", "C. 構築", "D. 制限"], ans: "D", b: "Answer: D" },
+    { q: "46", f: "データ検出の3つの方法に含まれないものはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. メタデータ", "B. 内容分析", "C. ラベル", "D. 分類"], ans: "D", b: "Answer: D" },
+    { q: "47", f: "LDAP環境で、エントリを識別するものは何ですか？", o: ["A", "B", "C", "D"], oText: ["A. ドメイン名", "B. 識別名(DN)", "C. ディレクトリ名", "D. デフォルト名"], ans: "B", b: "Answer: B" },
+    { q: "48", f: "SOAP APIがサポートせず、REST APIがサポートしているものは何ですか？", o: ["A", "B", "C", "D"], oText: ["A. 加速", "B. キャッシュ", "C. 冗長性", "D. 暗号化"], ans: "B", b: "Answer: B" },
+    { q: "49", f: "最初のチェック後に承認を検証しないアプリに関係する脅威はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. インジェクション", "B. 関数レベルのアクセス制御欠如", "C. CSRF", "D. XSS"], ans: "B", b: "Answer: B" },
+    { q: "50", f: "PaaSの主要な機能または特徴は何ですか？", o: ["A", "B", "C", "D"], oText: ["A. 同種環境", "B. 単一言語", "C. ロックイン削減", "D. 手動スケール"], ans: "C", b: "Answer: C\n解説: オープンスタックのサポートによりベンダーロックインを回避します。" },
+    { q: "51", f: "IAMプロセスの識別フェーズに含まれない要素はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 構築", "B. 反転", "C. 管理", "D. 解体"], ans: "B", b: "Answer: B" },
+    { q: "52", f: "OSのセキュリティ依存性を必要としないテクノロジはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 管理面", "B. タイプ1ハイパーバイザー", "C. タイプ2ハイパーバイザー", "D. 仮想マシン"], ans: "B", b: "Answer: B" },
+    { q: "53", f: "リソース制限の対象とならないユニットはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. ハイパーバイザー", "B. クラウド顧客", "C. 仮想マシン", "D. サービス"], ans: "A", b: "Answer: A" },
+    { q: "54", f: "実際のアクティビティを最も厳密に測定するWeb監視はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 総合監視", "B. RUM", "C. SIEM", "D. DAM"], ans: "B", b: "Answer: B" },
+    { q: "55", f: "SOC 2レポートに常に含める必要がある原則は何ですか？", o: ["A", "B", "C", "D"], oText: ["A. 守秘義務", "B. セキュリティ", "C. プライバシー", "D. 整合性"], ans: "B", b: "Answer: B" },
+    { q: "56", f: "現在の資産インベントリリストを維持する主な目的は何ですか？", o: ["A", "B", "C", "D"], oText: ["A. バックドア使用防止", "B. 自動再購入", "C. モラル維持", "D. 部門請求処理"], ans: "A", b: "Answer: A" },
+    { q: "57", f: "ユーザーの役割と特権を決定するプロセスは何ですか？", o: ["A", "B", "C", "D"], oText: ["A. 承認", "B. 認証", "C. 構築", "D. 特権"], ans: "A", b: "Answer: A" },
+    { q: "58", f: "STRIDE脅威モデルの6つのコンポーネントは何ですか？", o: ["A", "B", "C", "D"], oText: ["A. なりすまし,改ざん,否認,情報開示,DoS,権限昇格", "B. 否認防止を含むセット", "C. DDoSを含むセット", "D. ソーシャルエンジニアリングを含むセット"], ans: "A", b: "Answer: A" },
+    { q: "59", f: "他企業の調査が自社に影響を与える懸念があるクラウドの特性は何ですか？", o: ["A", "B", "C", "D"], oText: ["A. 仮想化", "B. プールされたリソース", "C. 弾力性", "D. セルフサービス"], ans: "B", b: "Answer: B" },
+    { q: "60", f: "否認防止とはどういう意味ですか？", o: ["A", "B", "C", "D"], oText: ["A. 会話禁止", "B. トランザクション完了", "C. 監査オフ防止", "D. 参加しなかったという主張の防止"], ans: "D", b: "Answer: D" },
+    { q: "61", f: "最も簡単な初期設定とアクセスを提供する導入モデルはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. ハイブリッド", "B. コミュニティ", "C. プライベート", "D. 公開"], ans: "D", b: "Answer: D" },
+    { q: "62", f: "CSA CCMが組織に提供するメリットはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. コンプライアンス簡素化", "B. ログ収集", "C. 全構成適用", "D. 契約執行"], ans: "A", b: "Answer: A" },
+    { q: "63", f: "IAMが保証する内容はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 全員承認", "B. 適切な人が適切な時にリソースへアクセス", "C. 全員認証", "D. 無権限者のアクセス"], ans: "B", b: "Answer: B" },
+    { q: "64", f: "知的財産保護のために推奨されない手法はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 出力監視", "B. 暗号化", "C. 回転式改札口", "D. 電子透かし"], ans: "C", b: "Answer: C" },
+    { q: "65", f: "物理状態の重ね合わせで能力を増やす理論技術はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. AONT-RS", "B. 量子コンピューティング", "C. 投資", "D. シャーディング"], ans: "B", b: "Answer: B" },
+    { q: "66", f: "仮想ハードドライブに似たストレージタイプはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. ボリューム", "B. 非構造化", "C. 構造化", "D. オブジェクト"], ans: "A", b: "Answer: A" },
+    { q: "67", f: "復号せずに暗号化データを処理する可能性のある技術は何ですか？", o: ["A", "B", "C", "D"], oText: ["A. AES", "B. リンク暗号", "C. 準同型暗号化", "D. ワンタイムパッド"], ans: "C", b: "Answer: C" },
+    { q: "68", f: "STRIDEモデルでの「T」は何を表しますか？", o: ["A", "B", "C", "D"], oText: ["A. TLS", "B. テスト", "C. 改ざん(Tampering)", "D. 輸送"], ans: "C", b: "Answer: C" },
+    { q: "69", f: "仮想化ツールセットを展開する前に何に従って構成すべきですか？", o: ["A", "B", "C", "D"], oText: ["A. 標準", "B. 法", "C. ベンダーガイダンス", "D. 専門家"], ans: "C", b: "Answer: C" },
+    { q: "70", f: "STRIDEモデルでの「I」は何を表しますか？", o: ["A", "B", "C", "D"], oText: ["A. 完全性", "B. 情報開示(Information Disclosure)", "C. セキュリティ", "D. インサイダー"], ans: "B", b: "Answer: B" },
+    { q: "71", f: "クラウド環境で最も一般的に使用されるAPIの組み合わせはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. REST/SAML", "B. SOAP/REST", "C. REST/XML", "D. XML/SAML"], ans: "B", b: "Answer: B" },
+    { q: "72", f: "消磁がクラウドで効果的でない可能性がある理由は何ですか？", o: ["A", "B", "C", "D"], oText: ["A. 測定済み", "B. 影響を受けない場合がある", "C. 連邦法禁止", "D. 半径が広い"], ans: "B", b: "Answer: B" },
+    { q: "73", f: "クラウド環境内で常に利用できるサニテーション手法はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 物理破壊", "B. シュレッダー", "C. 上書き", "D. 暗号化による消去"], ans: "D", b: "Answer: D" },
+    { q: "74", f: "管轄区域間の対立解決における主な障害は何ですか？", o: ["A", "B", "C", "D"], oText: ["A. 言語", "B. テクノロジ", "C. ライセンス", "D. 国際的権威の欠如"], ans: "D", b: "Answer: D" },
+    { q: "75", f: "データの信頼性に焦点を当てたコンセプトはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 完全性", "B. 可用性", "C. 否認防止", "D. 守秘義務"], ans: "A", b: "Answer: A" },
+    { q: "78", f: "ネットワークの分離とIPスペースの分離を可能にするのはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 計画", "B. WAN", "C. LAN", "D. VLAN"], ans: "D", b: "Answer: D" },
+    { q: "117", f: "医療記録とプライバシーに関連する米国の法律はどれですか？", o: ["A", "B", "C", "D"], oText: ["A. セーフハーバー", "B. SOX", "C. GLBA", "D. HIPAA"], ans: "D", b: "Answer: D" },
+    { q: "118", f: "PaaSに関連付けられているストレージタイプはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 構造化自由形式", "B. ボリューム,オブジェクト", "C. 構造化,非構造化", "D. DB,ファイルシステム"], ans: "C", b: "Answer: C" },
+    { q: "120", f: "データライフサイクルの最後に発生するフェーズはどれですか？", o: ["A", "B", "C", "D"], oText: ["A. 使用", "B. 破棄", "C. アーカイブ", "D. 共有"], ans: "B", b: "Answer: B" }
+];
+
+const container = document.getElementById('cardContainer');
+const scoreBoard = document.getElementById('scoreBoard');
+const wrongListUl = document.getElementById('wrongList');
+
+function updateScore() {
+    const percent = totalAnswered === 0 ? 0 : Math.round((correctCount / totalAnswered) * 100);
+    scoreBoard.innerText = `Score: ${correctCount} / ${totalAnswered} (${percent}%)`;
+}
+
+function updateWrongList() {
+    wrongListUl.innerHTML = '';
+    wrongQuestions.sort((a, b) => parseInt(a) - parseInt(b));
+    wrongQuestions.forEach(qNum => {
+        const li = document.createElement('li');
+        li.innerText = `Q${qNum}`;
+        wrongListUl.appendChild(li);
+    });
+}
+
+data.forEach(item => {
+    const card = document.createElement('div');
+    card.className = 'card';
+    card.id = `card-${item.q}`;
+    
+    card.onclick = () => {
+        if (card.classList.contains('answered')) {
+            card.classList.toggle('is-flipped');
+        }
+    };
+
+    const inner = document.createElement('div');
+    inner.className = 'card-inner';
+
+    const front = document.createElement('div');
+    front.className = 'card-front';
+    
+    const optionsDiv = document.createElement('div');
+    item.oText.forEach((text, index) => {
+        const btn = document.createElement('button');
+        btn.className = 'option-btn';
+        btn.innerText = text;
+        btn.onclick = (e) => {
+            e.stopPropagation();
+            checkAnswer(item, item.o[index], btn, card);
+        };
+        optionsDiv.appendChild(btn);
+    });
+
+    front.innerHTML = `
+        <div class="card-front-header">Q${item.q}</div>
+        <div class="question-text">${item.f}</div>
+    `;
+    front.appendChild(optionsDiv);
+
+    const back = document.createElement('div');
+    back.className = 'card-back';
+    back.innerHTML = `
+        <div class="card-front-header" style="color:#bdc3c7;">Q${item.q} Result (Click to flip back)</div>
+        <div id="result-label-${item.q}"></div>
+        <div class="answer-text">Answer: ${item.ans}</div>
+        <div class="explanation">${item.b.includes('\n') ? item.b.split('\n').slice(1).join('\n') : ''}</div>
+    `;
+
+    inner.appendChild(front);
+    inner.appendChild(back);
+    card.appendChild(inner);
+    container.appendChild(card);
+});
+
+function checkAnswer(item, selected, btn, card) {
+    if (card.classList.contains('answered')) return;
+
+    totalAnswered++;
+    const isCorrect = (selected === item.ans);
+    
+    if (isCorrect) {
+        correctCount++;
+        btn.classList.add('correct');
+    } else {
+        btn.classList.add('wrong');
+        if (!wrongQuestions.includes(item.q)) {
+            wrongQuestions.push(item.q);
+            updateWrongList();
+        }
+    }
+
+    const resultLabel = document.getElementById(`result-label-${item.q}`);
+    resultLabel.className = isCorrect ? 'result-label label-correct' : 'result-label label-wrong';
+    resultLabel.innerText = isCorrect ? '正解！' : '不正解...';
+
+    updateScore();
+
+    const buttons = card.querySelectorAll('.option-btn');
+    buttons.forEach(b => b.disabled = true);
+    
+    card.classList.add('answered');
+
+    setTimeout(() => {
+        card.classList.add('is-flipped');
+    }, 600);
+}
+</script>
+
+</body>
+</html>
