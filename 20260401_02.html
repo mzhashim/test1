@@ -1,0 +1,46 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>クラウドセキュリティ 全設問リスト</title>
+    <style>
+        body { font-family: sans-serif; background-color: #f4f7f6; padding: 20px; display: flex; flex-direction: column; align-items: center; }
+        .quiz-container { width: 100%; max-width: 850px; }
+        .quiz-item { background: white; border-radius: 8px; box-shadow: 0 2px 5px rgba(0,0,0,0.1); margin-bottom: 25px; padding: 25px; cursor: pointer; border-left: 6px solid #2196F3; }
+        .question-header { font-weight: bold; color: #1976D2; margin-bottom: 12px; font-size: 1.2em; }
+        .question-body { white-space: pre-wrap; line-height: 1.6; color: #333; margin-bottom: 15px; }
+        /* 選択肢を4行（1列）で表示 */
+        .options-container { display: flex; flex-direction: column; gap: 8px; margin-bottom: 10px; }
+        .option-item { background: #f0f4f8; padding: 10px 15px; border-radius: 4px; font-size: 0.95em; color: #555; border: 1px solid #e0e6ed; }
+        .answer-section { display: none; margin-top: 15px; padding-top: 15px; border-top: 2px dashed #eee; background-color: #fff9f9; }
+        .answer-section.show { display: block; }
+        .answer-label { font-weight: bold; color: #d32f2f; font-size: 1.1em; margin-bottom: 8px; }
+        .explanation-body { margin-top: 10px; font-size: 0.95em; color: #444; line-height: 1.7; background: #fff; padding: 10px; border-radius: 4px; border: 1px solid #ffebee; }
+    </style>
+</head>
+<body>
+    <h1>設問リスト</h1>
+    <div id="quiz-list" class="quiz-container"></div>
+    <script src="quiz-data.js"></script>
+    <script>
+        const listContainer = document.getElementById('quiz-list');
+        function renderQuiz() {
+            if (typeof quizData === 'undefined') return;
+            quizData.forEach((item) => {
+                const quizDiv = document.createElement('div');
+                quizDiv.className = 'quiz-item';
+                quizDiv.onclick = function() { this.querySelector('.answer-section').classList.toggle('show'); };
+                let optionsHtml = '<div class="options-container">';
+                item.options.forEach(opt => { optionsHtml += `<div class="option-item">${opt}</div>`; });
+                optionsHtml += '</div>';
+                quizDiv.innerHTML = `<div class="question-header">QUESTION NO: ${item.id}</div>
+                    <div class="question-body">${item.question}</div>${optionsHtml}
+                    <div class="answer-section"><div class="answer-label">Answer: ${item.answer}</div>
+                    ${item.explanation ? `<div class="explanation-body"><strong>Explanation:</strong><br>${item.explanation}</div>` : ''}</div>`;
+                listContainer.appendChild(quizDiv);
+            });
+        }
+        renderQuiz();
+    </script>
+</body>
+</html>
