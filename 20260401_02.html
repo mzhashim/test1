@@ -3,78 +3,79 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>クラウドセキュリティ 大文字版</title>
+    <title>クラウドセキュリティ 2倍サイズ版</title>
     <style>
-        /* 文字サイズを全体的に3倍に設定 */
+        /* 文字サイズを初期の2倍(2rem)に設定 */
         :root {
-            --base-font-size: 3rem; /* 通常の3倍相当 */
+            --base-font-size: 2rem; 
         }
 
         body {
             font-family: sans-serif;
             background-color: #f4f7f6;
             margin: 0;
-            padding: 20px;
+            padding: 15px;
             display: flex;
             flex-direction: column;
             align-items: center;
             font-size: var(--base-font-size);
+            -webkit-text-size-adjust: 100%; /* iOSでの自動サイズ調整を防止 */
         }
 
         .quiz-container {
             width: 100%;
-            max-width: 100%; /* スマホ横幅いっぱい */
+            max-width: 900px;
         }
 
         .quiz-item {
             background: white;
-            border-radius: 15px;
-            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
-            margin-bottom: 50px;
-            padding: 40px;
+            border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+            margin-bottom: 30px;
+            padding: 25px;
             cursor: pointer;
-            border-left: 20px solid #2196F3;
+            border-left: 12px solid #2196F3;
         }
 
         .question-header {
             font-weight: bold;
             color: #1976D2;
-            margin-bottom: 30px;
+            margin-bottom: 20px;
             font-size: 1.1em;
         }
 
         .question-body {
             white-space: pre-wrap;
-            line-height: 1.4;
+            line-height: 1.5;
             color: #333;
-            margin-bottom: 40px;
+            margin-bottom: 25px;
             font-size: 1em;
         }
 
-        /* 選択肢を1列（縦並び）で大きく表示 */
+        /* 選択肢を1列（縦並び）で表示 */
         .options-container {
             display: flex;
             flex-direction: column;
-            gap: 20px;
-            margin-bottom: 30px;
+            gap: 12px;
+            margin-bottom: 20px;
         }
 
         .option-item {
             background: #f0f4f8;
-            padding: 30px;
-            border-radius: 10px;
-            font-size: 0.9em;
+            padding: 18px 22px;
+            border-radius: 8px;
+            font-size: 0.95em;
             color: #444;
-            border: 2px solid #e0e6ed;
-            line-height: 1.3;
+            border: 1.5px solid #e0e6ed;
+            line-height: 1.4;
         }
 
         /* 回答エリア */
         .answer-section {
             display: none;
-            margin-top: 40px;
-            padding-top: 40px;
-            border-top: 5px dashed #eee;
+            margin-top: 25px;
+            padding-top: 25px;
+            border-top: 4px dashed #eee;
             background-color: #fff9f9;
         }
 
@@ -85,24 +86,32 @@
         .answer-label {
             font-weight: bold;
             color: #d32f2f;
-            font-size: 1.2em;
-            margin-bottom: 20px;
+            font-size: 1.1em;
+            margin-bottom: 15px;
         }
 
         .explanation-body {
-            margin-top: 20px;
+            margin-top: 15px;
             font-size: 0.85em;
             color: #444;
-            line-height: 1.5;
+            line-height: 1.6;
             background: #fff;
-            padding: 20px;
-            border-radius: 10px;
-            border: 2px solid #ffebee;
+            padding: 15px;
+            border-radius: 8px;
+            border: 1.5px solid #ffebee;
+        }
+
+        .hint {
+            font-size: 0.6em;
+            color: #999;
+            text-align: center;
+            margin-top: 15px;
         }
 
         h1 {
-            font-size: 1.2em;
+            font-size: 1.1em;
             text-align: center;
+            margin-bottom: 20px;
         }
     </style>
 </head>
@@ -132,16 +141,18 @@
                 };
 
                 let optionsHtml = '<div class="options-container">';
-                item.options.forEach(opt => {
-                    optionsHtml += `<div class="option-item">${opt}</div>`;
-                });
+                if (item.options) {
+                    item.options.forEach(opt => {
+                        optionsHtml += `<div class="option-item">${opt}</div>`;
+                    });
+                }
                 optionsHtml += '</div>';
 
                 quizDiv.innerHTML = `
                     <div class="question-header">QUESTION NO: ${item.id}</div>
                     <div class="question-body">${item.question}</div>
                     ${optionsHtml}
-                    <div style="font-size: 0.6em; color: #999; text-align: center;">タップで回答を表示</div>
+                    <div class="hint">タップで回答を表示</div>
                     <div class="answer-section">
                         <div class="answer-label">Answer: ${item.answer}</div>
                         ${item.explanation ? `<div class="explanation-body"><strong>Explanation:</strong><br>${item.explanation}</div>` : ''}
