@@ -3,180 +3,46 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>CCSP Mobile Quiz</title>
+    <title>CCSP Ultra-Compact Quiz</title>
     <style>
-        :root {
-            --primary-color: #1a73e8;
-            --bg-color: #f8f9fa;
-            --card-bg: #ffffff;
-            --correct-color: #34a853;
-            --wrong-color: #ea4335;
-        }
+        :root { --p: #1a73e8; --bg: #f0f2f5; --ok: #2e7d32; --ng: #d32f2f; }
+        body { font-family: -apple-system, sans-serif; background: var(--bg); margin: 0; padding: 0; display: flex; flex-direction: column; align-items: center; }
+        
+        /* ヘッダー最小化 */
+        .header { position: sticky; top: 0; width: 100%; background: white; z-index: 1000; padding: 4px 0; border-bottom: 1px solid #ddd; text-align: center; }
+        .score-board { font-size: 0.85rem; font-weight: bold; color: var(--p); }
 
-        body {
-            font-family: -apple-system, "Helvetica Neue", "Hiragino Kaku Gothic ProN", sans-serif;
-            background-color: var(--bg-color);
-            margin: 0;
-            padding: 0;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-        }
+        .container { width: 100%; max-width: 480px; padding: 4px; display: flex; flex-direction: column; gap: 4px; }
 
-        /* スコアボード固定 */
-        .header {
-            position: sticky;
-            top: 0;
-            width: 100%;
-            background: white;
-            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-            z-index: 1000;
-            padding: 10px 0;
-            text-align: center;
-        }
+        /* カード構造：高さ固定を解除して崩れを防止 */
+        .card { perspective: 1000px; width: 100%; margin: 0; }
+        .card-inner { position: relative; width: 100%; transition: transform 0.5s; transform-style: preserve-3d; }
+        .card.is-flipped .card-inner { transform: rotateY(180deg); }
 
-        .score-board {
-            font-size: 1.1rem;
-            font-weight: bold;
-            color: var(--primary-color);
+        .card-front, .card-back { 
+            width: 100%; min-height: 100px; 
+            backface-visibility: hidden; border-radius: 4px; padding: 8px; 
+            box-sizing: border-box; background: white; border: 1px solid #ccc;
         }
+        .card-back { position: absolute; top: 0; left: 0; height: 100%; background: #263238; color: white; transform: rotateY(180deg); overflow-y: auto; }
 
-        .container {
-            width: 95%;
-            max-width: 500px;
-            padding: 15px 0;
-            display: flex;
-            flex-direction: column;
-            gap: 20px;
-        }
+        .q-num { font-size: 0.7rem; color: #777; margin-bottom: 2px; }
+        .q-text { font-size: 0.9rem; line-height: 1.2; margin: 0 0 6px 0; font-weight: bold; color: #222; }
 
-        /* カードの基本構造 */
-        .card {
-            perspective: 1000px;
-            width: 100%;
-            height: 480px; /* スマホで押しやすい高さ */
-        }
-
-        .card-inner {
-            position: relative;
-            width: 100%;
-            height: 100%;
-            transition: transform 0.6s cubic-bezier(0.4, 0, 0.2, 1);
-            transform-style: preserve-3d;
-        }
-
-        .card.is-flipped .card-inner {
-            transform: rotateY(180deg);
-        }
-
-        .card-front, .card-back {
-            position: absolute;
-            width: 100%;
-            height: 100%;
-            backface-visibility: hidden;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.08);
-            padding: 20px;
-            box-sizing: border-box;
-            background: var(--card-bg);
-            display: flex;
-            flex-direction: column;
-            border: 1px solid #e0e0e0;
-        }
-
-        .card-back {
-            background: #2c3e50;
-            color: white;
-            transform: rotateY(180deg);
-            overflow-y: auto;
-        }
-
-        .q-header {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 12px;
-            font-size: 0.85rem;
-            color: #5f6368;
-            font-weight: bold;
-        }
-
-        .q-text {
-            font-size: 1.05rem;
-            line-height: 1.5;
-            margin-bottom: 20px;
-            font-weight: 600;
-            color: #202124;
-        }
-
-        .options-list {
-            display: flex;
-            flex-direction: column;
-            gap: 10px;
-            flex-grow: 1;
-        }
-
-        .opt-btn {
-            background: #ffffff;
-            border: 2px solid #dadce0;
-            border-radius: 12px;
-            padding: 14px 16px;
-            font-size: 0.95rem;
-            text-align: left;
-            cursor: pointer;
-            transition: all 0.2s;
+        .options { display: flex; flex-direction: column; gap: 3px; }
+        .opt-btn { 
+            background: #fff; border: 1px solid #ddd; border-radius: 4px; 
+            padding: 4px 8px; font-size: 0.85rem; text-align: left; line-height: 1.1;
             -webkit-tap-highlight-color: transparent;
         }
 
-        .opt-btn:active {
-            background: #f1f3f4;
-            transform: scale(0.98);
-        }
+        .opt-btn.correct { background: #e8f5e9; border-color: var(--ok); color: var(--ok); font-weight: bold; }
+        .opt-btn.wrong { background: #ffebee; border-color: var(--ng); color: var(--ng); font-weight: bold; }
 
-        /* 正誤表示 */
-        .opt-btn.correct-ans {
-            background-color: #e6f4ea;
-            border-color: var(--correct-color);
-            color: #137333;
-        }
-
-        .opt-btn.wrong-ans {
-            background-color: #fce8e6;
-            border-color: var(--wrong-color);
-            color: #c5221f;
-        }
-
-        /* 裏面表示 */
-        .ans-label {
-            color: #f1c40f;
-            font-size: 1.2rem;
-            font-weight: bold;
-            margin-bottom: 10px;
-        }
-
-        .exp-text {
-            font-size: 0.95rem;
-            line-height: 1.6;
-            color: #ecf0f1;
-            white-space: pre-wrap;
-        }
-
-        .flip-hint {
-            text-align: center;
-            font-size: 0.8rem;
-            color: #95a5a6;
-            margin-top: auto;
-            padding-top: 15px;
-        }
-
-        .wrong-summary {
-            background: white;
-            width: 95%;
-            max-width: 500px;
-            margin: 20px 0 50px;
-            padding: 15px;
-            border-radius: 16px;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.05);
-        }
+        .ans-label { color: #ffeb3b; font-size: 0.9rem; font-weight: bold; }
+        .exp-text { font-size: 0.8rem; line-height: 1.3; color: #eee; margin-top: 4px; }
+        
+        .wrong-summary { width: 100%; max-width: 480px; padding: 8px; background: white; margin-bottom: 40px; box-sizing: border-box; }
     </style>
 </head>
 <body>
@@ -185,16 +51,14 @@
     <div class="score-board" id="scoreDisp">Score: 0 / 0</div>
 </div>
 
-<div class="container" id="quizContainer">
-    </div>
+<div class="container" id="quizContainer"></div>
 
 <div class="wrong-summary">
-    <h3 style="margin:0 0 10px; color:#ea4335; font-size:1rem;">要復習リスト</h3>
-    <div id="wrongList" style="display:flex; flex-wrap:wrap; gap:5px;"></div>
+    <div style="font-size:0.8rem; color:var(--ng); font-weight:bold; margin-bottom:4px;">復習: <span id="wrongList"></span></div>
 </div>
 
 <script>
-// --- データ部：ここを元のファイルの全データに差し替えてください ---
+// --- 120問のデータをここに貼り付け ---
 const quizData = [
  {q:"1", f:"SaaS環境内の次のタスクのうち、クラウドの顧客が責任を負わないものはどれですか？", o:["A","B","C","D"], ot:["A.認証メカニズム","B.ブランディング","C.トレーニング","D.ユーザーアクセス"], a:"A", e:"Explanation: The authentication mechanisms and implementations are the responsibility of the cloud provider because they are core components of the application platform and service."},
     {q:"2", f:"ユーザーアカウント/アクセスのレビューとメンテナンスに誰が関与する必要がありますか？", o:["A","B","C","D"], ot:["A.ユーザーのマネージャー","B.セキュリティマネージャー","C.経理部","D.インシデント対応チーム"], a:"A", e:"Answer: A"},
@@ -316,7 +180,6 @@ const quizData = [
     {q:"118", f:"IaaS、PaaS、SaaSのうち、顧客の管理範囲が最も広いのは？", o:["A","B","C","D"], ot:["A.IaaS","B.PaaS","C.SaaS","D.すべて同じ"], a:"A", e:"Answer: A"},
     {q:"119", f:"クラウド環境でのペネトレーションテストを実施する際に不可欠な手続きは？", o:["A","B","C","D"], ot:["A.サーバーの停止","B.プロバイダーへの事前通知と承認","C.パスワードの公開","D.週末の深夜に行うこと"], a:"B", e:"Answer: B"},
     {q:"120", f:"クラウドにおけるデータのライフサイクルは、どのフェーズで終了しますか？", o:["A","B","C","D"], ot:["A.アーカイブ","B.共有","C.使用","D.破棄"], a:"D", e:"Answer: D"}
-
 ];
 
 const container = document.getElementById('quizContainer');
@@ -332,36 +195,22 @@ function render() {
         const card = document.createElement('div');
         card.className = 'card';
         card.id = `card-${item.q}`;
-
         const inner = document.createElement('div');
         inner.className = 'card-inner';
-
-        // 表面
         const front = document.createElement('div');
         front.className = 'card-front';
         
-        let optionsHtml = '';
+        let optsHtml = '';
         item.ot.forEach((text, i) => {
-            optionsHtml += `<button class="opt-btn" onclick="checkAnswer('${item.q}', '${item.o[i]}', ${i})">${text}</button>`;
+            optsHtml += `<button class="opt-btn" onclick="check('${item.q}', '${item.o[i]}', ${i})">${text}</button>`;
         });
 
-        front.innerHTML = `
-            <div class="q-header"><span>Question ${item.q}</span></div>
-            <div class="q-text">${item.f}</div>
-            <div class="options-list" id="opts-${item.q}">
-                ${optionsHtml}
-            </div>
-        `;
+        front.innerHTML = `<div class="q-num">Q${item.q}</div><div class="q-text">${item.f}</div><div class="options" id="opts-${item.q}">${optsHtml}</div>`;
 
-        // 裏面
         const back = document.createElement('div');
         back.className = 'card-back';
         back.onclick = () => card.classList.toggle('is-flipped');
-        back.innerHTML = `
-            <div class="ans-label">正解: ${item.a}</div>
-            <div class="exp-text">${item.e}</div>
-            <div class="flip-hint">タップして問題に戻る</div>
-        `;
+        back.innerHTML = `<div class="ans-label">正解: ${item.a}</div><div class="exp-text">${item.e}</div>`;
 
         inner.appendChild(front);
         inner.appendChild(back);
@@ -370,52 +219,32 @@ function render() {
     });
 }
 
-function checkAnswer(qNum, selectedLetter, optIndex) {
+function check(qNum, selected, idx) {
     const card = document.getElementById(`card-${qNum}`);
     const item = quizData.find(d => d.q === qNum);
-    const optButtons = document.getElementById(`opts-${qNum}`).getElementsByClassName('opt-btn');
+    const btns = document.getElementById(`opts-${qNum}`).getElementsByClassName('opt-btn');
 
-    // 初回回答時のみスコア加算（解き直しの場合はスコアは動かさない）
-    if (!card.hasAttribute('data-answered')) {
+    if (!card.hasAttribute('data-done')) {
         totalAnswered++;
-        card.setAttribute('data-answered', 'true');
-        if (selectedLetter === item.a) {
-            correctCount++;
-        } else {
-            wrongSet.add(qNum);
-            updateWrongDisplay();
-        }
+        card.setAttribute('data-done', 'true');
+        if (selected === item.a) { correctCount++; } 
+        else { wrongSet.add(qNum); updateWrongs(); }
     }
 
-    // 正誤表示のリセット（解き直し対応）
-    for (let btn of optButtons) {
-        btn.classList.remove('correct-ans', 'wrong-ans');
-    }
-
-    // 色付け
-    if (selectedLetter === item.a) {
-        optButtons[optIndex].classList.add('correct-ans');
-        // 正解したら少し遅れて自動で反転（解説表示）
-        setTimeout(() => card.classList.add('is-flipped'), 500);
+    for (let b of btns) b.classList.remove('correct', 'wrong');
+    if (selected === item.a) {
+        btns[idx].classList.add('correct');
+        setTimeout(() => card.classList.add('is-flipped'), 200);
     } else {
-        optButtons[optIndex].classList.add('wrong-ans');
-        // 間違えた場合、正解の選択肢も強調表示
-        const correctIdx = item.o.indexOf(item.a);
-        optButtons[correctIdx].classList.add('correct-ans');
-        setTimeout(() => card.classList.add('is-flipped'), 800);
+        btns[idx].classList.add('wrong');
+        btns[item.o.indexOf(item.a)].classList.add('correct');
+        setTimeout(() => card.classList.add('is-flipped'), 500);
     }
-
     scoreDisp.innerText = `Score: ${correctCount} / ${totalAnswered}`;
 }
 
-function updateWrongDisplay() {
-    wrongList.innerHTML = '';
-    Array.from(wrongSet).sort((a,b) => a-b).forEach(num => {
-        const span = document.createElement('span');
-        span.style.cssText = "background:#fce8e6; color:#c5221f; padding:4px 10px; border-radius:8px; font-size:0.8rem; font-weight:bold; border:1px solid #fad2cf";
-        span.innerText = `Q${num}`;
-        wrongList.appendChild(span);
-    });
+function updateWrongs() {
+    wrongList.innerText = Array.from(wrongSet).sort((a,b)=>a-b).map(n=>`Q${n}`).join(', ');
 }
 
 render();
