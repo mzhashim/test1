@@ -26,7 +26,6 @@
         }
         .container { width: 100%; max-width: 600px; padding-bottom: 60px; }
         
-        /* ボタン類 */
         .video-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; justify-content: center; }
         .video-btn { flex: 1 1 30%; min-width: 80px; padding: 14px 5px; background: #2c2c2c; border: 1px solid #444; color: #fff; cursor: pointer; border-radius: 8px; font-size: 13px; }
         .video-btn.active { background: var(--primary-color); border-color: var(--primary-color); font-weight: bold; }
@@ -71,12 +70,11 @@
         }
         .save-status { font-size: 11px; color: var(--accent-green); text-align: right; height: 14px; }
 
-        /* Geminiリンク：スマホで最もブロックされにくい設定 */
         .gemini-btn { 
             background: linear-gradient(135deg, #4285f4, #34a853) !important; 
             font-weight: bold; margin-top: 10px; display: flex; align-items: center; 
-            justify-content: center; gap: 10px; height: 55px; color: white; 
-            border-radius: 10px; text-decoration: none; font-size: 16px;
+            justify-content: center; gap: 10px; height: 60px; color: white; 
+            border-radius: 12px; text-decoration: none; font-size: 16px;
             box-shadow: 0 4px 10px rgba(0,0,0,0.3);
         }
     </style>
@@ -133,44 +131,37 @@
         <textarea id="memo-area" placeholder="メモを入力..."></textarea>
         <div class="save-status" id="save-msg"></div>
         <div class="control-group">
-            <button style="background: var(--accent-blue);" onclick="saveMemo()">メモ保存</button>
+            <button style="background: var(--accent-blue);" onclick="saveMemo()">保存</button>
             <button style="background: #555;" onclick="clearMemo()">消去</button>
         </div>
         
-        <a href="https://gemini.google.com/app" target="_blank" rel="noopener noreferrer" class="gemini-btn">
-            <span>✨</span> Geminiに声で相談する
+        <a href="https://gemini.google.com/app" target="_self" rel="noopener noreferrer" class="gemini-btn">
+            <span>✨</span> Geminiに相談する
         </a>
     </div>
 </div>
 
 <script>
-    // YouTube API関連のグローバル変数
     let player;
     let pointA = null, pointB = null;
     let isLooping = false;
     let loopCheckInterval = null;
 
-    // --- YouTube API 読み込み ---
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
+    document.head.appendChild(tag);
 
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
             videoId: 'SerbAkU-6QY',
-            playerVars: { 
-                'autoplay': 0, 'controls': 1, 'rel': 0, 'modestbranding': 1, 'cc_load_policy': 1, 'origin': location.origin
-            },
+            playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0, 'modestbranding': 1, 'cc_load_policy': 1 },
             events: { 'onStateChange': onPlayerStateChange }
         });
     }
 
-    // --- 再生機能関数群 ---
     window.switchVideo = function(id, btn) {
         if(player && player.loadVideoById) {
-            player.loadVideoById(id);
-            resetLoop();
+            player.loadVideoById(id); resetLoop();
             document.querySelectorAll('.video-btn').forEach(b => b.classList.remove('active'));
             btn.classList.add('active');
             window.scrollTo({ top: 0, behavior: 'smooth' });
@@ -186,19 +177,13 @@
     };
 
     window.seek = function(sec) {
-        if(player && player.getCurrentTime) {
-            player.seekTo(player.getCurrentTime() + sec, true);
-        }
+        if(player) player.seekTo(player.getCurrentTime() + sec, true);
     };
 
     window.setCaption = function(lang) {
         if (!player) return;
-        if (lang === 'none') {
-            player.unloadModule('captions');
-        } else {
-            player.loadModule('captions');
-            player.setOption('captions', 'track', {'languageCode': lang});
-        }
+        if (lang === 'none') player.unloadModule('captions');
+        else { player.loadModule('captions'); player.setOption('captions', 'track', {'languageCode': lang}); }
     };
 
     window.setPoint = function(type) {
@@ -209,10 +194,7 @@
     };
 
     window.toggleLoop = function() {
-        if (pointA === null || pointB === null) {
-            alert("A点とB点を両方セットしてください");
-            return;
-        }
+        if (pointA === null || pointB === null) return alert("A/B点をセットしてください");
         isLooping = !isLooping;
         const btn = document.getElementById('btnLoop');
         btn.innerText = isLooping ? "LOOP: ON" : "LOOP: OFF";
@@ -227,9 +209,7 @@
     };
 
     function updateStatus() {
-        const aTxt = pointA !== null ? pointA.toFixed(2) + 's' : '--';
-        const bTxt = pointB !== null ? pointB.toFixed(2) + 's' : '--';
-        document.getElementById('status').innerText = `A: ${aTxt} | B: ${bTxt}`;
+        document.getElementById('status').innerText = `A: ${pointA ? pointA.toFixed(2) : '--'}s | B: ${pointB ? pointB.toFixed(2) : '--'}s`;
     }
 
     function onPlayerStateChange(event) {
@@ -243,16 +223,14 @@
                 }, 100);
             }
         } else {
-            if(loopCheckInterval) { clearInterval(loopCheckInterval); loopCheckInterval = null; }
+            clearInterval(loopCheckInterval); loopCheckInterval = null;
         }
     }
 
-    // --- メモ機能 ---
     window.saveMemo = function() {
         localStorage.setItem('yt_study_memo', document.getElementById('memo-area').value);
         const msg = document.getElementById('save-msg');
-        msg.innerText = "Saved: " + new Date().toLocaleTimeString();
-        setTimeout(() => msg.innerText = "", 3000);
+        msg.innerText = "Saved!"; setTimeout(() => msg.innerText = "", 2000);
     };
 
     window.clearMemo = function() {
