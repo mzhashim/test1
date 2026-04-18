@@ -26,12 +26,12 @@
         }
         .container { width: 100%; max-width: 600px; padding-bottom: 60px; }
         
-        /* 動画選択リスト */
+        /* 動画選択 */
         .video-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; justify-content: center; }
         .video-btn { flex: 1 1 30%; min-width: 80px; padding: 12px 5px; background: #2c2c2c; border: 1px solid #444; color: #fff; cursor: pointer; border-radius: 8px; font-size: 12px; }
         .video-btn.active { background: var(--primary-color); border-color: var(--primary-color); font-weight: bold; }
 
-        /* プレイヤー（スマホでスクロールしても上部に固定） */
+        /* プレイヤー固定 */
         #player-container { 
             width: 100%; 
             aspect-ratio: 16 / 9; 
@@ -45,12 +45,11 @@
         }
         #player { width: 100%; height: 100%; }
 
-        /* パネル共通 */
         .panel { margin-top: 15px; background: var(--panel-bg); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; }
         .control-group { display: flex; flex-wrap: wrap; gap: 6px; justify-content: space-between; align-items: center; }
         .label { font-size: 11px; color: #888; width: 100%; margin-bottom: 2px; border-left: 3px solid var(--primary-color); padding-left: 8px; text-transform: uppercase; }
         
-        button { 
+        button, .link-btn { 
             flex: 1; 
             min-width: 50px; 
             padding: 14px 2px; 
@@ -60,9 +59,12 @@
             color: white; 
             cursor: pointer; 
             font-size: 14px; 
+            text-align: center;
+            text-decoration: none;
+            display: inline-block;
             -webkit-tap-highlight-color: transparent; 
         }
-        button:active { background: #555; transform: scale(0.96); }
+        button:active, .link-btn:active { background: #555; transform: scale(0.96); }
         
         .speed-btn.active { background: var(--accent-blue); }
         .loop-btn.active { background: var(--accent-green); }
@@ -79,7 +81,6 @@
             margin-top: 5px; 
         }
 
-        /* メモ機能 */
         #memo-area { 
             width: 100%; 
             height: 120px; 
@@ -92,12 +93,11 @@
             font-size: 15px; 
             line-height: 1.5; 
             resize: none;
-            -webkit-appearance: none;
         }
         .save-status { font-size: 11px; color: var(--accent-green); text-align: right; height: 14px; margin-top: -5px; }
 
-        /* Geminiボタン */
-        .gemini-btn { 
+        /* Geminiボタンをリンク形式に */
+        .gemini-link { 
             background: linear-gradient(135deg, #4285f4, #34a853) !important; 
             font-weight: bold; 
             margin-top: 8px;
@@ -106,7 +106,9 @@
             justify-content: center;
             gap: 10px;
             height: 50px;
-            border: 1px solid rgba(255,255,255,0.2);
+            color: white;
+            border-radius: 10px;
+            text-decoration: none;
         }
     </style>
 </head>
@@ -168,9 +170,9 @@
             <button style="background: #555;" onclick="clearMemo()">消去</button>
         </div>
 
-        <button class="gemini-btn" onclick="askGemini()">
+        <a href="https://gemini.google.com/app" class="gemini-link">
             <span>✨</span> Geminiに声で相談する
-        </button>
+        </a>
     </div>
 </div>
 
@@ -180,7 +182,6 @@
     let isLooping = false;
     let loopCheckInterval;
 
-    // YouTube IFrame API
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.body.appendChild(tag);
@@ -237,63 +238,4 @@
     }
 
     function toggleLoop() {
-        if (pointA === null || pointB === null) return alert("AとBの両方をセットしてください");
-        isLooping = !isLooping;
-        const btn = document.getElementById('btnLoop');
-        btn.innerText = isLooping ? "LOOP: ON" : "LOOP: OFF";
-        btn.classList.toggle('active', isLooping);
-    }
-
-    function resetLoop() {
-        pointA = pointB = null; isLooping = false;
-        const btn = document.getElementById('btnLoop');
-        btn.innerText = "LOOP: OFF";
-        btn.classList.remove('active');
-        updateStatus();
-    }
-
-    function updateStatus() {
-        document.getElementById('status').innerText = 
-            `A: ${pointA !== null ? pointA.toFixed(2) + 's' : '--'} | B: ${pointB !== null ? pointB.toFixed(2) + 's' : '--'}`;
-    }
-
-    function onPlayerStateChange(event) {
-        if (event.data == YT.PlayerState.PLAYING) {
-            if (!loopCheckInterval) {
-                loopCheckInterval = setInterval(() => {
-                    if (isLooping && pointA !== null && pointB !== null) {
-                        const now = player.getCurrentTime();
-                        if (now >= pointB || now < pointA - 0.1) player.seekTo(pointA);
-                    }
-                }, 100);
-            }
-        } else {
-            clearInterval(loopCheckInterval);
-            loopCheckInterval = null;
-        }
-    }
-
-    // メモ
-    function saveMemo() {
-        localStorage.setItem('yt_study_memo', document.getElementById('memo-area').value);
-        const msg = document.getElementById('save-msg');
-        msg.innerText = "Saved at " + new Date().toLocaleTimeString();
-        setTimeout(() => msg.innerText = "", 3000);
-    }
-
-    function clearMemo() {
-        if (confirm("メモをすべて消去しますか？")) {
-            document.getElementById('memo-area').value = "";
-            localStorage.removeItem('yt_study_memo');
-        }
-    }
-
-    // Gemini相談：スマホでの確実な動作のため href を使用
-    function askGemini() {
-        // 現在のタブでGeminiを開くことで、ポップアップブロックを回避します
-        window.location.href = "https://gemini.google.com/app";
-    }
-</script>
-
-</body>
-</html>
+        if (pointA === null || pointB === null) return
