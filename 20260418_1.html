@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
-    <title>English Learning Player Pro</title>
+    <title>English Player Pro</title>
     <style>
         :root { 
             --primary-color: #ff4500; 
@@ -27,7 +27,7 @@
         .container { width: 100%; max-width: 600px; padding-bottom: 60px; }
         
         .video-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; justify-content: center; }
-        .video-btn { flex: 1 1 30%; min-width: 80px; padding: 12px 5px; background: #2c2c2c; border: 1px solid #444; color: #fff; cursor: pointer; border-radius: 8px; font-size: 12px; }
+        .video-btn { flex: 1 1 30%; min-width: 80px; padding: 14px 5px; background: #2c2c2c; border: 1px solid #444; color: #fff; cursor: pointer; border-radius: 8px; font-size: 13px; }
         .video-btn.active { background: var(--primary-color); border-color: var(--primary-color); font-weight: bold; }
 
         #player-container { 
@@ -65,7 +65,7 @@
         .loop-btn.active { background: var(--accent-green); }
         .cc-btn { background: #444; font-size: 11px; }
         
-        .info-display { 
+        #status { 
             text-align: center; 
             font-family: monospace; 
             font-size: 1.1em; 
@@ -85,13 +85,13 @@
             border-radius: 10px; 
             padding: 12px; 
             box-sizing: border-box; 
-            font-size: 15px; 
+            font-size: 16px; 
             line-height: 1.5; 
             resize: none;
         }
-        .save-status { font-size: 11px; color: var(--accent-green); text-align: right; height: 14px; margin-top: -5px; }
+        .save-status { font-size: 11px; color: var(--accent-green); text-align: right; height: 14px; }
 
-        .gemini-link { 
+        .gemini-btn { 
             background: linear-gradient(135deg, #4285f4, #34a853) !important; 
             font-weight: bold; 
             margin-top: 8px;
@@ -123,7 +123,7 @@
     </div>
 
     <div class="panel">
-        <div class="label">Speed Control</div>
+        <div class="label">Speed</div>
         <div class="control-group">
             <button class="speed-btn" onclick="setSpeed(0.2, this)">0.2x</button>
             <button class="speed-btn" onclick="setSpeed(0.5, this)">0.5x</button>
@@ -151,71 +151,157 @@
             <button id="btnLoop" class="loop-btn" onclick="toggleLoop()">LOOP: OFF</button>
             <button onclick="resetLoop()">Reset</button>
         </div>
-
-        <div class="info-display" id="status">A: -- | B: --</div>
+        <div id="status">A: -- | B: --</div>
     </div>
 
     <div class="panel">
-        <div class="label">Learning Notes & AI Coach</div>
-        <textarea id="memo-area" placeholder="気になったフレーズを記録..."></textarea>
+        <div class="label">Notes & AI Coach</div>
+        <textarea id="memo-area" placeholder="メモを入力..."></textarea>
         <div class="save-status" id="save-msg"></div>
-        
         <div class="control-group">
             <button style="background: var(--accent-blue);" onclick="saveMemo()">メモ保存</button>
             <button style="background: #555;" onclick="clearMemo()">消去</button>
         </div>
-
-        <a href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer" class="gemini-link">
+        <a href="https://gemini.google.com/app" target="_blank" class="gemini-btn">
             <span>✨</span> Geminiに声で相談する
         </a>
     </div>
 </div>
 
 <script>
+    // 主要な関数を最初から定義しておく（ReferenceError対策）
     let player;
     let pointA = null, pointB = null;
     let isLooping = false;
-    let loopCheckInterval;
+    let loopCheckInterval = null;
 
-    // YouTube API 読み込み
+    function switchVideo(id, btn) {
+        if(player && player.loadVideoById) {
+            player.loadVideoById(id);
+            resetLoop();
+            document.querySelectorAll('.video-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+    }
+
+    function setSpeed(rate, btn) {
+        if(player && player.setPlaybackRate) {
+            player.setPlaybackRate(rate);
+            document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
+            btn.classList.add('active');
+        }
+    }
+
+    function seek(sec) {
+        if(player && player.getCurrentTime) {
+            player.seekTo(player.getCurrentTime() + sec, true);
+        }
+    }
+
+    function setCaption(lang) {
+        if (!player) return;
+        if (lang === 'none') {
+            player.unloadModule('captions');
+        } else {
+            player.loadModule('captions');
+            player.setOption('captions', 'track', {'languageCode': lang});
+        }
+    }
+
+    function setPoint(type) {
+        if(!player) return;
+        const now = player.getCurrentTime();
+        if (type === 'A') pointA = now; else pointB = now;
+        updateStatus();
+    }
+
+    function toggleLoop() {
+        if (pointA === null || pointB === null) {
+            alert("A点とB点を両方セットしてください");
+            return;
+        }
+        isLooping = !isLooping;
+        const btn = document.getElementById('btnLoop');
+        btn.innerText = isLooping ? "LOOP: ON" : "LOOP: OFF";
+        btn.classList.toggle('active', isLooping);
+    }
+
+    function resetLoop() {
+        pointA = pointB = null; 
+        isLooping = false;
+        const btn = document.getElementById('btnLoop');
+        if(btn) {
+            btn.innerText = "LOOP: OFF";
+            btn.classList.remove('active');
+        }
+        updateStatus();
+    }
+
+    function updateStatus() {
+        const aTxt = pointA !== null ? pointA.toFixed(2) + 's' : '--';
+        const bTxt = pointB !== null ? pointB.toFixed(2) + 's' : '--';
+        const statusEl = document.getElementById('status');
+        if(statusEl) statusEl.innerText = `A: ${aTxt} | B: ${bTxt}`;
+    }
+
+    // YouTube API の読み込み
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
-    const firstScriptTag = document.getElementsByTagName('script')[0];
-    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
-
-    window.onload = function() {
-        const savedMemo = localStorage.getItem('yt_study_memo');
-        if (savedMemo) document.getElementById('memo-area').value = savedMemo;
-    };
+    document.head.appendChild(tag);
 
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
             videoId: 'SerbAkU-6QY',
             playerVars: { 
-                'autoplay': 0, 
-                'controls': 1, 
-                'rel': 0, 
-                'modestbranding': 1, 
-                'cc_load_policy': 1,
-                'origin': location.origin
+                'autoplay': 0, 'controls': 1, 'rel': 0, 'modestbranding': 1, 'cc_load_policy': 1
             },
             events: {
-                'onReady': onPlayerReady,
                 'onStateChange': onPlayerStateChange
             }
         });
     }
 
-    function onPlayerReady(event) {
-        console.log("Player Ready");
+    function onPlayerStateChange(event) {
+        if (event.data == YT.PlayerState.PLAYING) {
+            if (!loopCheckInterval) {
+                loopCheckInterval = setInterval(() => {
+                    if (isLooping && pointA !== null && pointB !== null) {
+                        const now = player.getCurrentTime();
+                        if (now >= pointB || now < pointA - 0.1) {
+                            player.seekTo(pointA);
+                        }
+                    }
+                }, 100);
+            }
+        } else {
+            if(loopCheckInterval) {
+                clearInterval(loopCheckInterval);
+                loopCheckInterval = null;
+            }
+        }
     }
 
-    function switchVideo(id, btn) {
-        player.loadVideoById(id);
-        resetLoop();
-        document.querySelectorAll('.video-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-        window.scrollTo({ top: 0, behavior: 'smooth' });
+    function saveMemo() {
+        localStorage.setItem('yt_study_memo', document.getElementById('memo-area').value);
+        const msg = document.getElementById('save-msg');
+        msg.innerText = "Saved: " + new Date().toLocaleTimeString();
+        setTimeout(() => msg.innerText = "", 3000);
     }
 
-    function setSpeed
+    function clearMemo() {
+        if (confirm("消去しますか？")) {
+            document.getElementById('memo-area').value = "";
+            localStorage.removeItem('yt_study_memo');
+        }
+    }
+
+    // 保存メモの復元
+    window.onload = function() {
+        const saved = localStorage.getItem('yt_study_memo');
+        if (saved) document.getElementById('memo-area').value = saved;
+    };
+</script>
+
+</body>
+</html>
