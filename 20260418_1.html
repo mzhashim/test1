@@ -1,0 +1,104 @@
+﻿<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>YouTube学習用プレイヤー</title>
+    <style>
+        body { font-family: sans-serif; background: #1a1a1a; color: white; display: flex; flex-direction: column; align-items: center; padding: 20px; }
+        #player { width: 100%; max-width: 800px; aspect-ratio: 16 / 9; background: #000; border: 2px solid #333; }
+        .controls { margin-top: 15px; display: flex; flex-wrap: wrap; gap: 8px; justify-content: center; }
+        button { padding: 10px 15px; border: none; border-radius: 4px; background: #444; color: white; cursor: pointer; }
+        button:hover { background: #666; }
+        .active { background: #ff4500 !important; }
+        .info { margin-top: 10px; color: #ccc; font-size: 0.9em; }
+    </style>
+</head>
+<body>
+
+    <div id="player"></div>
+
+    <div class="controls">
+        <button onclick="setSpeed(0.2)">0.2x</button>
+        <button onclick="setSpeed(0.5)">0.5x</button>
+        <button onclick="setSpeed(1.0)">1.0x</button>
+        <span> | </span>
+        <button onclick="seek(-0.5)">-0.5s</button>
+        <button onclick="seek(-2.0)">-2s</button>
+    </div>
+
+    <div class="controls">
+        <button id="btnA" onclick="setPoint('A')">A地点</button>
+        <button id="btnB" onclick="setPoint('B')">B地点</button>
+        <button id="btnLoop" onclick="toggleLoop()">リピート: OFF</button>
+        <button onclick="resetLoop()">リセット</button>
+    </div>
+
+    <div class="info" id="status">A: -- | B: --</div>
+
+    <script>
+        let player;
+        let pointA = null;
+        let pointB = null;
+        let isLooping = false;
+
+        // APIの読み込み
+        const tag = document.createElement('script');
+        tag.src = "https://www.youtube.com/iframe_api";
+        document.body.appendChild(tag);
+
+        function onYouTubeIframeAPIReady() {
+            player = new YT.Player('player', {
+                videoId: 'aqz-KE-bpKQ', // ここに見たい動画のIDを直接入れるのが一番安定します
+                playerVars: {
+                    'autoplay': 0,
+                    'controls': 1,
+                    'rel': 0,
+                    'origin': window.location.origin || '*' 
+                },
+                events: { 'onStateChange': checkLoop }
+            });
+        }
+
+        function setSpeed(rate) {
+            player.setPlaybackRate(rate);
+        }
+
+        function seek(sec) {
+            player.seekTo(player.getCurrentTime() + sec, true);
+        }
+
+        function setPoint(type) {
+            const now = player.getCurrentTime();
+            if(type === 'A') pointA = now;
+            else pointB = now;
+            document.getElementById('status').innerText = `A: ${pointA?.toFixed(2)}s | B: ${pointB?.toFixed(2)}s`;
+        }
+
+        function toggleLoop() {
+            if (pointA === null || pointB === null) return alert("AとBをセットしてください");
+            isLooping = !isLooping;
+            document.getElementById('btnLoop').innerText = isLooping ? "リピート: ON" : "リピート: OFF";
+            document.getElementById('btnLoop').classList.toggle('active');
+        }
+
+        function resetLoop() {
+            pointA = pointB = null;
+            isLooping = false;
+            document.getElementById('status').innerText = "A: -- | B: --";
+            document.getElementById('btnLoop').innerText = "リピート: OFF";
+            document.getElementById('btnLoop').classList.remove('active');
+        }
+
+        function checkLoop(event) {
+            if (event.data == YT.PlayerState.PLAYING) {
+                setInterval(() => {
+                    if (isLooping && pointA !== null && pointB !== null) {
+                        let now = player.getCurrentTime();
+                        if (now >= pointB || now < pointA) player.seekTo(pointA);
+                    }
+                }, 100);
+            }
+        }
+    </script>
+</body>
+</html>
