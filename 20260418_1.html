@@ -26,12 +26,10 @@
         }
         .container { width: 100%; max-width: 600px; padding-bottom: 60px; }
         
-        /* 動画選択 */
         .video-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; justify-content: center; }
         .video-btn { flex: 1 1 30%; min-width: 80px; padding: 12px 5px; background: #2c2c2c; border: 1px solid #444; color: #fff; cursor: pointer; border-radius: 8px; font-size: 12px; }
         .video-btn.active { background: var(--primary-color); border-color: var(--primary-color); font-weight: bold; }
 
-        /* プレイヤー固定 */
         #player-container { 
             width: 100%; 
             aspect-ratio: 16 / 9; 
@@ -49,7 +47,7 @@
         .control-group { display: flex; flex-wrap: wrap; gap: 6px; justify-content: space-between; align-items: center; }
         .label { font-size: 11px; color: #888; width: 100%; margin-bottom: 2px; border-left: 3px solid var(--primary-color); padding-left: 8px; text-transform: uppercase; }
         
-        button, .link-btn { 
+        button { 
             flex: 1; 
             min-width: 50px; 
             padding: 14px 2px; 
@@ -59,12 +57,9 @@
             color: white; 
             cursor: pointer; 
             font-size: 14px; 
-            text-align: center;
-            text-decoration: none;
-            display: inline-block;
             -webkit-tap-highlight-color: transparent; 
         }
-        button:active, .link-btn:active { background: #555; transform: scale(0.96); }
+        button:active { background: #555; transform: scale(0.96); }
         
         .speed-btn.active { background: var(--accent-blue); }
         .loop-btn.active { background: var(--accent-green); }
@@ -96,7 +91,6 @@
         }
         .save-status { font-size: 11px; color: var(--accent-green); text-align: right; height: 14px; margin-top: -5px; }
 
-        /* Geminiボタンをリンク形式に */
         .gemini-link { 
             background: linear-gradient(135deg, #4285f4, #34a853) !important; 
             font-weight: bold; 
@@ -105,10 +99,11 @@
             align-items: center;
             justify-content: center;
             gap: 10px;
-            height: 50px;
+            height: 55px;
             color: white;
             border-radius: 10px;
             text-decoration: none;
+            font-size: 16px;
         }
     </style>
 </head>
@@ -135,7 +130,7 @@
             <button class="speed-btn active" onclick="setSpeed(1.0, this)">1.0x</button>
         </div>
 
-        <div class="label">Seek / Fast Forward</div>
+        <div class="label">Seek</div>
         <div class="control-group">
             <button onclick="seek(-2.0)">-2.0s</button>
             <button onclick="seek(-0.5)">-0.5s</button>
@@ -170,7 +165,7 @@
             <button style="background: #555;" onclick="clearMemo()">消去</button>
         </div>
 
-        <a href="https://gemini.google.com/app" class="gemini-link">
+        <a href="https://gemini.google.com/" target="_blank" rel="noopener noreferrer" class="gemini-link">
             <span>✨</span> Geminiに声で相談する
         </a>
     </div>
@@ -182,9 +177,11 @@
     let isLooping = false;
     let loopCheckInterval;
 
+    // YouTube API 読み込み
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
-    document.body.appendChild(tag);
+    const firstScriptTag = document.getElementsByTagName('script')[0];
+    firstScriptTag.parentNode.insertBefore(tag, firstScriptTag);
 
     window.onload = function() {
         const savedMemo = localStorage.getItem('yt_study_memo');
@@ -195,12 +192,22 @@
         player = new YT.Player('player', {
             videoId: 'SerbAkU-6QY',
             playerVars: { 
-                'autoplay': 0, 'controls': 1, 'rel': 0, 'modestbranding': 1, 
-                'cc_load_policy': 1, 'cc_lang_pref': 'en',
-                'origin': window.location.origin 
+                'autoplay': 0, 
+                'controls': 1, 
+                'rel': 0, 
+                'modestbranding': 1, 
+                'cc_load_policy': 1,
+                'origin': location.origin
             },
-            events: { 'onStateChange': onPlayerStateChange }
+            events: {
+                'onReady': onPlayerReady,
+                'onStateChange': onPlayerStateChange
+            }
         });
+    }
+
+    function onPlayerReady(event) {
+        console.log("Player Ready");
     }
 
     function switchVideo(id, btn) {
@@ -211,31 +218,4 @@
         window.scrollTo({ top: 0, behavior: 'smooth' });
     }
 
-    function setSpeed(rate, btn) {
-        player.setPlaybackRate(rate);
-        document.querySelectorAll('.speed-btn').forEach(b => b.classList.remove('active'));
-        btn.classList.add('active');
-    }
-
-    function seek(sec) {
-        player.seekTo(player.getCurrentTime() + sec, true);
-    }
-
-    function setCaption(lang) {
-        if (!player) return;
-        if (lang === 'none') {
-            player.unloadModule('captions');
-        } else {
-            player.loadModule('captions');
-            player.setOption('captions', 'track', {'languageCode': lang});
-        }
-    }
-
-    function setPoint(type) {
-        const now = player.getCurrentTime();
-        if (type === 'A') pointA = now; else pointB = now;
-        updateStatus();
-    }
-
-    function toggleLoop() {
-        if (pointA === null || pointB === null) return
+    function setSpeed
