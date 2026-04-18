@@ -1,0 +1,172 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>クラウドセキュリティ 標準サイズ版</title>
+    <style>
+        /* 文字サイズを標準（1rem）に設定 */
+        :root {
+            --base-font-size: 1rem; 
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, "Helvetica Neue", Arial, sans-serif;
+            background-color: #f4f7f6;
+            margin: 0;
+            padding: 10px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            font-size: var(--base-font-size);
+            color: #333;
+        }
+
+        .quiz-container {
+            width: 100%;
+            max-width: 700px;
+        }
+
+        .quiz-item {
+            background: white;
+            border-radius: 8px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            margin-bottom: 20px;
+            padding: 15px 20px;
+            cursor: pointer;
+            border-left: 6px solid #2196F3;
+            transition: background-color 0.2s;
+        }
+
+        .quiz-item:active {
+            background-color: #f0f0f0;
+        }
+
+        .question-header {
+            font-weight: bold;
+            color: #1976D2;
+            margin-bottom: 10px;
+            font-size: 0.9em;
+        }
+
+        .question-body {
+            white-space: pre-wrap;
+            line-height: 1.6;
+            margin-bottom: 15px;
+            font-size: 1em;
+        }
+
+        /* 選択肢を1列（縦並び） */
+        .options-container {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            margin-bottom: 10px;
+        }
+
+        .option-item {
+            background: #f8fafc;
+            padding: 10px 15px;
+            border-radius: 5px;
+            font-size: 0.95em;
+            color: #444;
+            border: 1px solid #e2e8f0;
+            line-height: 1.4;
+        }
+
+        /* 回答エリア */
+        .answer-section {
+            display: none;
+            margin-top: 15px;
+            padding: 15px;
+            border-top: 1px solid #eee;
+            background-color: #fffaf0;
+            border-radius: 0 0 5px 5px;
+        }
+
+        .answer-section.show {
+            display: block;
+        }
+
+        .answer-label {
+            font-weight: bold;
+            color: #d32f2f;
+            margin-bottom: 10px;
+        }
+
+        .explanation-body {
+            margin-top: 8px;
+            font-size: 0.9em;
+            color: #444;
+            line-height: 1.6;
+            background: #fff;
+            padding: 10px;
+            border: 1px solid #fed7d7;
+            border-radius: 4px;
+        }
+
+        .hint {
+            font-size: 0.75em;
+            color: #aaa;
+            text-align: right;
+            margin-top: 5px;
+        }
+
+        h1 {
+            font-size: 1.2rem;
+            margin: 20px 0;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+    <h1>設問リスト</h1>
+    <div id="quiz-list" class="quiz-container"></div>
+
+    <script src="quiz-data_001.js"></script>
+
+    <script>
+        const listContainer = document.getElementById('quiz-list');
+
+        function renderQuiz() {
+            if (typeof quizData === 'undefined') {
+                listContainer.innerHTML = "<p>データが見つかりません。quiz-data.jsを確認してください。</p>";
+                return;
+            }
+
+            quizData.forEach((item) => {
+                const quizDiv = document.createElement('div');
+                quizDiv.className = 'quiz-item';
+                
+                quizDiv.onclick = function() {
+                    const ans = this.querySelector('.answer-section');
+                    ans.classList.toggle('show');
+                };
+
+                let optionsHtml = '<div class="options-container">';
+                if (item.options) {
+                    item.options.forEach(opt => {
+                        optionsHtml += `<div class="option-item">${opt}</div>`;
+                    });
+                }
+                optionsHtml += '</div>';
+
+                quizDiv.innerHTML = `
+                    <div class="question-header">QUESTION NO: ${item.id}</div>
+                    <div class="question-body">${item.question}</div>
+                    ${optionsHtml}
+                    <div class="hint">タップで回答を表示</div>
+                    <div class="answer-section">
+                        <div class="answer-label">Answer: ${item.answer}</div>
+                        ${item.explanation ? `<div class="explanation-body"><strong>Explanation:</strong><br>${item.explanation}</div>` : ''}
+                    </div>
+                `;
+                listContainer.appendChild(quizDiv);
+            });
+        }
+
+        renderQuiz();
+    </script>
+</body>
+</html>
