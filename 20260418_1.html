@@ -3,34 +3,107 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Learning Player Pro</title>
+    <title>English Learning Player Pro + Memo & AI</title>
     <style>
-        :root { --primary-color: #ff4500; --bg-color: #121212; --panel-bg: #1e1e1e; --accent-blue: #007bff; --accent-green: #28a745; }
-        body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); color: #e0e0e0; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 600px; }
+        :root { 
+            --primary-color: #ff4500; 
+            --bg-color: #121212; 
+            --panel-bg: #1e1e1e; 
+            --accent-blue: #007bff; 
+            --accent-green: #28a745; 
+            --gemini-blue: #4285f4;
+            --memo-bg: #2a2a2a; 
+        }
+        body { 
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; 
+            background: var(--bg-color); 
+            color: #e0e0e0; 
+            margin: 0; 
+            padding: 10px; 
+            display: flex; 
+            flex-direction: column; 
+            align-items: center; 
+        }
+        .container { width: 100%; max-width: 600px; padding-bottom: 50px; }
         
         /* 動画リスト */
         .video-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; justify-content: center; }
         .video-btn { flex: 1 1 30%; min-width: 80px; padding: 10px 5px; background: #2c2c2c; border: 1px solid #444; color: #fff; cursor: pointer; border-radius: 6px; font-size: 12px; }
         .video-btn.active { background: var(--primary-color); border-color: var(--primary-color); font-weight: bold; }
 
-        /* プレイヤー */
-        #player-container { width: 100%; aspect-ratio: 16 / 9; background: #000; border-radius: 12px; overflow: hidden; position: sticky; top: 0; z-index: 100; box-shadow: 0 4px 15px rgba(0,0,0,0.5); }
+        /* プレイヤー（上部固定） */
+        #player-container { 
+            width: 100%; 
+            aspect-ratio: 16 / 9; 
+            background: #000; 
+            border-radius: 12px; 
+            overflow: hidden; 
+            position: sticky; 
+            top: 0; 
+            z-index: 100; 
+            box-shadow: 0 4px 15px rgba(0,0,0,0.5); 
+        }
         #player { width: 100%; height: 100%; }
 
-        /* コントロールパネル */
-        .control-panel { margin-top: 15px; background: var(--panel-bg); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; }
+        /* パネル共通 */
+        .panel { margin-top: 15px; background: var(--panel-bg); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; }
         .control-group { display: flex; flex-wrap: wrap; gap: 6px; justify-content: space-between; align-items: center; }
         .label { font-size: 11px; color: #888; width: 100%; margin-bottom: 2px; border-left: 3px solid var(--primary-color); padding-left: 8px; text-transform: uppercase; }
         
-        button { flex: 1; min-width: 50px; padding: 12px 2px; border: none; border-radius: 6px; background: #333; color: white; cursor: pointer; font-size: 13px; -webkit-tap-highlight-color: transparent; }
+        button { 
+            flex: 1; 
+            min-width: 50px; 
+            padding: 12px 2px; 
+            border: none; 
+            border-radius: 8px; 
+            background: #333; 
+            color: white; 
+            cursor: pointer; 
+            font-size: 13px; 
+            -webkit-tap-highlight-color: transparent; 
+        }
         button:active { background: #555; transform: scale(0.95); }
         
         .speed-btn.active { background: var(--accent-blue); }
         .loop-btn.active { background: var(--accent-green); }
         .cc-btn { background: #555; font-size: 11px; }
         
-        .info-display { text-align: center; font-family: monospace; font-size: 1.1em; color: #00ffcc; background: #000; padding: 8px; border-radius: 6px; margin-top: 5px; }
+        .info-display { 
+            text-align: center; 
+            font-family: monospace; 
+            font-size: 1.1em; 
+            color: #00ffcc; 
+            background: #000; 
+            padding: 10px; 
+            border-radius: 6px; 
+            margin-top: 5px; 
+        }
+
+        /* メモ機能 */
+        #memo-area { 
+            width: 100%; 
+            height: 100px; 
+            background: var(--memo-bg); 
+            color: #fff; 
+            border: 1px solid #444; 
+            border-radius: 8px; 
+            padding: 10px; 
+            box-sizing: border-box; 
+            font-size: 14px; 
+            line-height: 1.5; 
+            resize: none;
+        }
+        .save-status { font-size: 10px; color: var(--accent-green); text-align: right; height: 12px; }
+
+        .gemini-btn { 
+            background: var(--gemini-blue) !important; 
+            font-weight: bold; 
+            margin-top: 5px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+        }
     </style>
 </head>
 <body>
@@ -48,7 +121,7 @@
         <div id="player"></div>
     </div>
 
-    <div class="control-panel">
+    <div class="panel">
         <div class="label">Speed Control</div>
         <div class="control-group">
             <button class="speed-btn" onclick="setSpeed(0.2, this)">0.2x</button>
@@ -63,22 +136,37 @@
             <button style="background:#444;" onclick="seek(3.0)">+3.0s</button>
         </div>
 
-        <div class="label">Captions (Beta)</div>
+        <div class="label">Captions</div>
         <div class="control-group">
-            <button class="cc-btn" onclick="setCaption('en')">英字 ON</button>
-            <button class="cc-btn" onclick="setCaption('ja')">日本語 ON</button>
-            <button class="cc-btn" onclick="setCaption('none')">オフ</button>
+            <button class="cc-btn" onclick="setCaption('en')">EN ON</button>
+            <button class="cc-btn" onclick="setCaption('ja')">JA ON</button>
+            <button class="cc-btn" onclick="setCaption('none')">OFF</button>
         </div>
 
         <div class="label">A-B Loop</div>
         <div class="control-group">
-            <button id="btnA" onclick="setPoint('A')">A地点</button>
-            <button id="btnB" onclick="setPoint('B')">B地点</button>
+            <button id="btnA" onclick="setPoint('A')">A点</button>
+            <button id="btnB" onclick="setPoint('B')">B点</button>
             <button id="btnLoop" class="loop-btn" onclick="toggleLoop()">LOOP: OFF</button>
             <button onclick="resetLoop()">Reset</button>
         </div>
 
         <div class="info-display" id="status">A: -- | B: --</div>
+    </div>
+
+    <div class="panel">
+        <div class="label">Learning Notes & AI Coach</div>
+        <textarea id="memo-area" placeholder="気になった表現をメモ..."></textarea>
+        <div class="save-status" id="save-msg"></div>
+        
+        <div class="control-group">
+            <button style="background: var(--accent-blue);" onclick="saveMemo()">メモ保存</button>
+            <button style="background: #555;" onclick="clearMemo()">消去</button>
+        </div>
+
+        <button class="gemini-btn" onclick="askGemini()">
+            <span>✨</span> Geminiに声で相談する
+        </button>
     </div>
 </div>
 
@@ -88,17 +176,23 @@
     let isLooping = false;
     let loopCheckInterval;
 
+    // IFrame API 読み込み
     const tag = document.createElement('script');
     tag.src = "https://www.youtube.com/iframe_api";
     document.body.appendChild(tag);
+
+    // 初期化：メモ読み込み
+    window.onload = function() {
+        const savedMemo = localStorage.getItem('yt_study_memo');
+        if (savedMemo) document.getElementById('memo-area').value = savedMemo;
+    };
 
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
             videoId: 'SerbAkU-6QY',
             playerVars: { 
                 'autoplay': 0, 'controls': 1, 'rel': 0, 'modestbranding': 1, 
-                'cc_load_policy': 1, // 字幕機能を有効化
-                'cc_lang_pref': 'en',
+                'cc_load_policy': 1, 'cc_lang_pref': 'en',
                 'origin': window.location.origin 
             },
             events: { 'onStateChange': onPlayerStateChange }
@@ -123,8 +217,8 @@
         player.seekTo(player.getCurrentTime() + sec, true);
     }
 
-    // 字幕制御の試行
     function setCaption(lang) {
+        if (!player) return;
         if (lang === 'none') {
             player.unloadModule('captions');
         } else {
@@ -174,6 +268,26 @@
             clearInterval(loopCheckInterval);
             loopCheckInterval = null;
         }
+    }
+
+    // メモ機能
+    function saveMemo() {
+        localStorage.setItem('yt_study_memo', document.getElementById('memo-area').value);
+        const msg = document.getElementById('save-msg');
+        msg.innerText = "Saved at " + new Date().toLocaleTimeString();
+        setTimeout(() => msg.innerText = "", 3000);
+    }
+
+    function clearMemo() {
+        if (confirm("メモを全消去しますか？")) {
+            document.getElementById('memo-area').value = "";
+            localStorage.removeItem('yt_study_memo');
+        }
+    }
+
+    // Gemini相談
+    function askGemini() {
+        window.open("https://gemini.google.com/app", "_blank");
     }
 </script>
 
