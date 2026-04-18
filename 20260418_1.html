@@ -3,15 +3,15 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>English Learning Player</title>
+    <title>English Learning Player Pro</title>
     <style>
-        :root { --primary-color: #ff4500; --bg-color: #121212; --panel-bg: #1e1e1e; }
+        :root { --primary-color: #ff4500; --bg-color: #121212; --panel-bg: #1e1e1e; --accent-blue: #007bff; --accent-green: #28a745; }
         body { font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif; background: var(--bg-color); color: #e0e0e0; margin: 0; padding: 10px; display: flex; flex-direction: column; align-items: center; }
-        .container { width: 100%; max-width: 600px; } /* 6.1インチスマホの横幅に最適化 */
+        .container { width: 100%; max-width: 600px; }
         
         /* 動画リスト */
-        .video-selector { display: flex; flex-wrap: wrap; gap: 8px; margin-bottom: 15px; justify-content: center; }
-        .video-btn { flex: 1 1 45%; min-width: 120px; padding: 12px 8px; background: #2c2c2c; border: 1px solid #444; color: #fff; cursor: pointer; border-radius: 8px; font-size: 14px; transition: 0.2s; }
+        .video-selector { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 12px; justify-content: center; }
+        .video-btn { flex: 1 1 30%; min-width: 80px; padding: 10px 5px; background: #2c2c2c; border: 1px solid #444; color: #fff; cursor: pointer; border-radius: 6px; font-size: 12px; }
         .video-btn.active { background: var(--primary-color); border-color: var(--primary-color); font-weight: bold; }
 
         /* プレイヤー */
@@ -19,18 +19,18 @@
         #player { width: 100%; height: 100%; }
 
         /* コントロールパネル */
-        .control-panel { margin-top: 15px; background: var(--panel-bg); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 12px; }
-        .control-group { display: flex; flex-wrap: wrap; gap: 8px; justify-content: space-between; align-items: center; }
-        .label { font-size: 12px; color: #888; width: 100%; margin-bottom: 4px; border-left: 3px solid var(--primary-color); padding-left: 8px; }
+        .control-panel { margin-top: 15px; background: var(--panel-bg); padding: 15px; border-radius: 12px; display: flex; flex-direction: column; gap: 10px; }
+        .control-group { display: flex; flex-wrap: wrap; gap: 6px; justify-content: space-between; align-items: center; }
+        .label { font-size: 11px; color: #888; width: 100%; margin-bottom: 2px; border-left: 3px solid var(--primary-color); padding-left: 8px; text-transform: uppercase; }
         
-        button { flex: 1; min-width: 60px; padding: 12px 5px; border: none; border-radius: 8px; background: #333; color: white; cursor: pointer; font-size: 14px; -webkit-tap-highlight-color: transparent; }
+        button { flex: 1; min-width: 50px; padding: 12px 2px; border: none; border-radius: 6px; background: #333; color: white; cursor: pointer; font-size: 13px; -webkit-tap-highlight-color: transparent; }
         button:active { background: #555; transform: scale(0.95); }
         
-        .speed-btn.active { background: #007bff; }
-        .loop-btn { background: #333; }
-        .loop-btn.active { background: #28a745; }
+        .speed-btn.active { background: var(--accent-blue); }
+        .loop-btn.active { background: var(--accent-green); }
+        .cc-btn { background: #555; font-size: 11px; }
         
-        .info-display { text-align: center; font-family: monospace; font-size: 1.1em; color: #00ffcc; background: #000; padding: 10px; border-radius: 6px; margin-top: 5px; }
+        .info-display { text-align: center; font-family: monospace; font-size: 1.1em; color: #00ffcc; background: #000; padding: 8px; border-radius: 6px; margin-top: 5px; }
     </style>
 </head>
 <body>
@@ -49,27 +49,33 @@
     </div>
 
     <div class="control-panel">
-        <div class="label">再生速度</div>
+        <div class="label">Speed Control</div>
         <div class="control-group">
             <button class="speed-btn" onclick="setSpeed(0.2, this)">0.2x</button>
             <button class="speed-btn" onclick="setSpeed(0.5, this)">0.5x</button>
             <button class="speed-btn active" onclick="setSpeed(1.0, this)">1.0x</button>
         </div>
 
-        <div class="label">巻き戻し</div>
+        <div class="label">Seek</div>
         <div class="control-group">
-            <button onclick="seek(-0.5)">-0.5秒</button>
-            <button onclick="seek(-2.0)">-2.0秒</button>
+            <button onclick="seek(-2.0)">-2.0s</button>
+            <button onclick="seek(-0.5)">-0.5s</button>
+            <button style="background:#444;" onclick="seek(3.0)">+3.0s</button>
         </div>
 
-        <div class="label">A-Bリピート</div>
+        <div class="label">Captions (Beta)</div>
+        <div class="control-group">
+            <button class="cc-btn" onclick="setCaption('en')">英字 ON</button>
+            <button class="cc-btn" onclick="setCaption('ja')">日本語 ON</button>
+            <button class="cc-btn" onclick="setCaption('none')">オフ</button>
+        </div>
+
+        <div class="label">A-B Loop</div>
         <div class="control-group">
             <button id="btnA" onclick="setPoint('A')">A地点</button>
             <button id="btnB" onclick="setPoint('B')">B地点</button>
-        </div>
-        <div class="control-group">
-            <button id="btnLoop" class="loop-btn" onclick="toggleLoop()">リピート: OFF</button>
-            <button onclick="resetLoop()">リセット</button>
+            <button id="btnLoop" class="loop-btn" onclick="toggleLoop()">LOOP: OFF</button>
+            <button onclick="resetLoop()">Reset</button>
         </div>
 
         <div class="info-display" id="status">A: -- | B: --</div>
@@ -78,8 +84,7 @@
 
 <script>
     let player;
-    let pointA = null;
-    let pointB = null;
+    let pointA = null, pointB = null;
     let isLooping = false;
     let loopCheckInterval;
 
@@ -90,7 +95,12 @@
     function onYouTubeIframeAPIReady() {
         player = new YT.Player('player', {
             videoId: 'SerbAkU-6QY',
-            playerVars: { 'autoplay': 0, 'controls': 1, 'rel': 0, 'modestbranding': 1, 'origin': window.location.origin },
+            playerVars: { 
+                'autoplay': 0, 'controls': 1, 'rel': 0, 'modestbranding': 1, 
+                'cc_load_policy': 1, // 字幕機能を有効化
+                'cc_lang_pref': 'en',
+                'origin': window.location.origin 
+            },
             events: { 'onStateChange': onPlayerStateChange }
         });
     }
@@ -113,26 +123,34 @@
         player.seekTo(player.getCurrentTime() + sec, true);
     }
 
+    // 字幕制御の試行
+    function setCaption(lang) {
+        if (lang === 'none') {
+            player.unloadModule('captions');
+        } else {
+            player.loadModule('captions');
+            player.setOption('captions', 'track', {'languageCode': lang});
+        }
+    }
+
     function setPoint(type) {
         const now = player.getCurrentTime();
-        if (type === 'A') pointA = now;
-        else pointB = now;
+        if (type === 'A') pointA = now; else pointB = now;
         updateStatus();
     }
 
     function toggleLoop() {
-        if (pointA === null || pointB === null) return alert("AとBの両方をセットしてください");
+        if (pointA === null || pointB === null) return alert("AとBをセットしてください");
         isLooping = !isLooping;
         const btn = document.getElementById('btnLoop');
-        btn.innerText = isLooping ? "リピート: ON" : "リピート: OFF";
+        btn.innerText = isLooping ? "LOOP: ON" : "LOOP: OFF";
         btn.classList.toggle('active', isLooping);
     }
 
     function resetLoop() {
-        pointA = pointB = null;
-        isLooping = false;
+        pointA = pointB = null; isLooping = false;
         const btn = document.getElementById('btnLoop');
-        btn.innerText = "リピート: OFF";
+        btn.innerText = "LOOP: OFF";
         btn.classList.remove('active');
         updateStatus();
     }
